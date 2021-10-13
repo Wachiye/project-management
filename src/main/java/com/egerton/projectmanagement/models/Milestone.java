@@ -1,12 +1,18 @@
 package com.egerton.projectmanagement.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.Set;
 
 @Entity
 @Table(name = "milestones")
@@ -15,7 +21,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-@Data
+
 public class Milestone {
     @Id
     @GeneratedValue( strategy = GenerationType.AUTO)
@@ -26,11 +32,11 @@ public class Milestone {
     private String name;
 
     @Column( name = "start_date", nullable = false)
-    @NotBlank(message = "Missing field. Milestone Start Date is required.")
+    @NotNull(message = "Missing field. Milestone Start Date is required.")
     private Date startDate;
 
     @Column( name = "end_date", nullable = false)
-    @NotBlank(message = "Missing field. Milestone End Date is required.")
+    @NotNull(message = "Missing field. Milestone End Date is required.")
     private Date endDate;
 
     @Column( name = "started_on")
@@ -39,11 +45,7 @@ public class Milestone {
     @Column( name = "finished_on")
     private Date finishedOn;
 
-    @Column( name = "project_id", nullable = false)
-    @NotBlank(message = "Missing field. Project ID is required.")
-    private long projectId;
-
-    @Column( name = "student_id", nullable = false)
+    @Column( name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
@@ -54,4 +56,13 @@ public class Milestone {
     @Column( name = "update_at", nullable = false)
     @LastModifiedDate
     private Date updateAt;
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="project_id", referencedColumnName = "_id")
+    @JsonIgnoreProperties("milestones")
+    private Project project;
+
+    @OneToMany( mappedBy = "milestone", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("milestone")
+    private Set<Task> tasks;
 }

@@ -1,13 +1,17 @@
 package com.egerton.projectmanagement.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "students")
@@ -16,7 +20,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@Data
+
 public class Student {
     @Id
     @GeneratedValue( strategy = GenerationType.AUTO)
@@ -42,9 +46,6 @@ public class Student {
     @NotBlank(message = "Missing field. Password is required.")
     private String password;
 
-    @OneToMany(targetEntity = Project.class, cascade = CascadeType.ALL)
-    private List<Project> projects;
-
     @Column( name = "created_at", nullable = false)
     @CreatedDate
     private Date createdAt;
@@ -52,4 +53,16 @@ public class Student {
     @Column( name = "update_at", nullable = false)
     @LastModifiedDate
     private Date updateAt;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("student")
+    private Set<Project> projects;
+
+    @OneToMany(mappedBy = "student",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("student")
+    private Set<ProjectFile> projectFiles;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("student")
+    private Set<Comment> comments;
 }

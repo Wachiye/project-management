@@ -1,7 +1,9 @@
 package com.egerton.projectmanagement.controllers;
 
 import com.egerton.projectmanagement.models.Project;
+import com.egerton.projectmanagement.models.ProjectFile;
 import com.egerton.projectmanagement.models.Student;
+import com.egerton.projectmanagement.repositories.ProjectFileRepository;
 import com.egerton.projectmanagement.repositories.ProjectRepository;
 import com.egerton.projectmanagement.repositories.StudentRepository;
 import com.egerton.projectmanagement.requests.StudentRequest;
@@ -26,6 +28,9 @@ public class StudentController {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private ProjectFileRepository fileRepository;
 
     // get all students
     @GetMapping()
@@ -217,7 +222,7 @@ public class StudentController {
                 //empty array list of projects
                 List<Project> projects = new ArrayList<>();
                 //get projects and populate the array list
-                projectRepository.findAllByStudentId( id).forEach( projects::add);
+                projectRepository.findAllByStudent( optionalStudent.get()).forEach( projects::add);
                 if(projects.isEmpty()){ // no projects found
                     return  ResponseHandler.generateResponse(
                             "No project record was found with student id " + id,
@@ -233,6 +238,48 @@ public class StudentController {
 
             }
 
+            //student not found
+            return ResponseHandler.generateResponse(
+                    "Student with id " + id + " not found",
+                    HttpStatus.NOT_FOUND,
+                    null
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseHandler.generateResponse(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null
+            );
+        }
+    }
+
+    //get files
+    @GetMapping("/{id}/files")
+    public  ResponseEntity<Object> getFiles(@PathVariable("id") long id){
+        try{
+            //find student
+            Optional<Student> optionalStudent = studentRepository.findById(id);
+            if(optionalStudent.isPresent()){//student found
+                //empty array list of files
+                List<ProjectFile> files = new ArrayList<>();
+                //get files and populate the array list
+                fileRepository.findAllByStudent(optionalStudent.get()).forEach(files::add);
+
+                if(files.isEmpty()){ // no tasks found
+                    return  ResponseHandler.generateResponse(
+                            "No file record was found with project id " + id,
+                            HttpStatus.NOT_FOUND,
+                            null
+                    );
+                }
+
+                return ResponseHandler.generateResponse(
+                        null,
+                        HttpStatus.OK,
+                        files
+                );
+            }
             //student not found
             return ResponseHandler.generateResponse(
                     "Student with id " + id + " not found",

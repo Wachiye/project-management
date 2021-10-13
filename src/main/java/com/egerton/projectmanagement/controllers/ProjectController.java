@@ -1,10 +1,7 @@
 package com.egerton.projectmanagement.controllers;
 
 import com.egerton.projectmanagement.models.*;
-import com.egerton.projectmanagement.repositories.MilestoneRepository;
-import com.egerton.projectmanagement.repositories.ProjectRepository;
-import com.egerton.projectmanagement.repositories.StaffRepository;
-import com.egerton.projectmanagement.repositories.StudentRepository;
+import com.egerton.projectmanagement.repositories.*;
 import com.egerton.projectmanagement.requests.ProjectRequest;
 import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +30,12 @@ public class ProjectController {
 
     @Autowired
     private StaffRepository staffRepository;
+
+    @Autowired
+    private ProjectFileRepository fileRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     // get all projects
     @GetMapping()
@@ -105,6 +108,7 @@ public class ProjectController {
                 Project project = new Project();
                 //populate project object with data
                 populateProject(project, requestData);
+                project.setStudent( optionalStudent.get());
                 project.setStatus(Status.WAITING_APPROVAL);
                 project.setCreatedAt( new Date());
                 project.setUpdateAt( new Date());
@@ -178,7 +182,6 @@ public class ProjectController {
         project.setDescription(requestData.getDescription());
         project.setCategory(ProjectCategory.valueOf(requestData.getCategory()));
         project.setLanguages( requestData.getLanguages());
-        project.setStudentId( requestData.getStudentId());
         project.setEvaluatorId(requestData.getEvaluatorId());
         project.setStartDate( requestData.getStartDate());
         project.setEndDate( requestData.getEndDate());
@@ -195,7 +198,7 @@ public class ProjectController {
                 //empty array list of milestones
                 List<Milestone> milestones = new ArrayList<>();
                 //get milestones and populate the array list
-                milestoneRepository.findAllByProjectId( id).forEach( milestones::add);
+                milestoneRepository.findAllByProject(optionalProject.get()).forEach( milestones::add);
                 if(milestones.isEmpty()){ // no milestones found
                     return  ResponseHandler.generateResponse(
                             "No milestone record was found with project id " + id,
@@ -207,6 +210,88 @@ public class ProjectController {
                         null,
                         HttpStatus.OK,
                         milestones
+                );
+            }
+            return ResponseHandler.generateResponse(
+                    "Project with id " + id + " not found",
+                    HttpStatus.NOT_FOUND,
+                    null
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseHandler.generateResponse(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null
+            );
+        }
+    }
+
+    //get files
+    @GetMapping("/{id}/files")
+    public  ResponseEntity<Object> getFiles(@PathVariable("id") long id){
+        try{
+            //find project
+            Optional<Project> optionalProject = projectRepository.findById(id);
+            if(optionalProject.isPresent()){//project found
+                //empty array list of files
+                List<ProjectFile> files = new ArrayList<>();
+                //get files and populate the array list
+                fileRepository.findAllByProject(optionalProject.get()).forEach(files::add);
+
+                if(files.isEmpty()){ // no tasks found
+                    return  ResponseHandler.generateResponse(
+                            "No file record was found with project id " + id,
+                            HttpStatus.NOT_FOUND,
+                            null
+                    );
+                }
+
+                return ResponseHandler.generateResponse(
+                        null,
+                        HttpStatus.OK,
+                        files
+                );
+            }
+            return ResponseHandler.generateResponse(
+                    "Project with id " + id + " not found",
+                    HttpStatus.NOT_FOUND,
+                    null
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseHandler.generateResponse(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null
+            );
+        }
+    }
+
+    //get comments
+    @GetMapping("/{id}/comments")
+    public  ResponseEntity<Object> getComments(@PathVariable("id") long id){
+        try{
+            //find project
+            Optional<Project> optionalProject = projectRepository.findById(id);
+            if(optionalProject.isPresent()){//project found
+                //empty array list of comments
+                List<Comment> comments = new ArrayList<>();
+                //get comments and populate the array list
+                commentRepository.findAllByProject( optionalProject.get()).forEach(comments::add);
+
+                if(comments.isEmpty()){ // no comments found
+                    return  ResponseHandler.generateResponse(
+                            "No comment record was found with project id " + id,
+                            HttpStatus.NOT_FOUND,
+                            null
+                    );
+                }
+
+                return ResponseHandler.generateResponse(
+                        null,
+                        HttpStatus.OK,
+                        comments
                 );
             }
             return ResponseHandler.generateResponse(
@@ -264,7 +349,19 @@ public class ProjectController {
             if(optionalProject.isPresent()) { //project found
 
                 Project project = optionalProject.get();
-                project.setStatus( Status.valueOf(status));
+                Status _status = Status.valueOf(status);
+                project.setStatus( _status);
+
+                switch (_status){
+                    case IN_PROGRESS:
+                        project.setStartedOn( new Date());
+                        break;
+                    case FINISHED:
+                        project.setFinishedOn( new Date());
+                        break;
+                    default: break;
+                }
+
                 project.setUpdateAt(new Date());
 
                 //save project

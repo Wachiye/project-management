@@ -3,6 +3,7 @@ package com.egerton.projectmanagement.controllers;
 import com.egerton.projectmanagement.models.*;
 import com.egerton.projectmanagement.repositories.MilestoneRepository;
 import com.egerton.projectmanagement.repositories.ProjectRepository;
+import com.egerton.projectmanagement.repositories.TaskRepository;
 import com.egerton.projectmanagement.requests.MilestoneRequest;
 import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class MilestoneController {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     // get all milestones
     @GetMapping()
@@ -95,6 +99,7 @@ public class MilestoneController {
                 Milestone milestone = new Milestone();
                 //populate milestone object with data
                 populateMilestone(milestone, requestData);
+                milestone.setProject( optionalProject.get());
                 milestone.setStatus(Status.PENDING);
                 milestone.setCreatedAt( new Date());
                 milestone.setUpdateAt( new Date());
@@ -164,9 +169,49 @@ public class MilestoneController {
 
     protected void populateMilestone( Milestone milestone, MilestoneRequest requestData){
         milestone.setName( requestData.getName());
-        milestone.setProjectId(requestData.getProjectId());
         milestone.setStartDate( requestData.getStartDate());
         milestone.setEndDate( requestData.getEndDate());
+    }
+
+    //get milestone milestones
+    @GetMapping("/{id}/tasks")
+    public  ResponseEntity<Object> getTasks(@PathVariable("id") long id){
+        try{
+            //find milestone
+            Optional<Milestone> optionalMilestone = milestoneRepository.findById(id);
+            if(optionalMilestone.isPresent()){//milestone found
+                //empty array list of tasks
+                List<Task> tasks = new ArrayList<>();
+                //get tasks and populate the array list
+                taskRepository.findAllByMilestone(optionalMilestone.get()).forEach(tasks::add);
+
+                if(tasks.isEmpty()){ // no tasks found
+                    return  ResponseHandler.generateResponse(
+                            "No task record was found with milestone id " + id,
+                            HttpStatus.NOT_FOUND,
+                            null
+                    );
+                }
+
+                return ResponseHandler.generateResponse(
+                        null,
+                        HttpStatus.OK,
+                        tasks
+                );
+            }
+            return ResponseHandler.generateResponse(
+                    "Milestone with id " + id + " not found",
+                    HttpStatus.NOT_FOUND,
+                    null
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseHandler.generateResponse(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null
+            );
+        }
     }
     
     // get all milestone by status

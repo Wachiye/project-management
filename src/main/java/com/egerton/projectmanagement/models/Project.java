@@ -1,12 +1,18 @@
 package com.egerton.projectmanagement.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.Set;
 
 @Entity
 @Table(name = "projects")
@@ -15,7 +21,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-@Data
+
 public class Project {
     @Id
     @GeneratedValue( strategy = GenerationType.AUTO)
@@ -34,7 +40,7 @@ public class Project {
     private String description;
 
     @Column( name = "category", nullable = false)
-    @NotBlank(message = "Missing field. Project category is required.")
+    @NotNull(message = "Missing field. Project category is required.")
     @Enumerated(EnumType.STRING)
     private ProjectCategory category;
 
@@ -43,11 +49,11 @@ public class Project {
     private String languages;
 
     @Column( name = "start_date", nullable = false)
-    @NotBlank(message = "Missing field. Project Start Date is required.")
+    @NotNull(message = "Missing field. Project Start Date is required.")
     private Date startDate;
 
     @Column( name = "end_date", nullable = false)
-    @NotBlank(message = "Missing field. Project End Date is required.")
+    @NotNull(message = "Missing field. Project End Date is required.")
     private Date endDate;
 
     @Column( name = "started_on")
@@ -56,18 +62,14 @@ public class Project {
     @Column( name = "finished_on")
     private Date finishedOn;
 
-    @Column( name = "student_id", nullable = false)
-    @NotBlank(message = "Missing field. Student ID is required.")
-    private long studentId;
-
     @Column( name = "evaluator_id", nullable = false)
-    @NotBlank(message = "Missing field. Evaluator ID is required.")
+    @NotNull(message = "Missing field. Evaluator ID is required.")
     private long evaluatorId;
 
     @Column( name = "supervisor_id")
     private long supervisorId;
 
-    @Column( name = "student_id", nullable = false)
+    @Column( name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
@@ -78,4 +80,21 @@ public class Project {
     @Column( name = "update_at", nullable = false)
     @LastModifiedDate
     private Date updateAt;
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="student_id", referencedColumnName = "_id")
+    @JsonIgnoreProperties("projects")
+    private Student student;
+
+    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("project")
+    private Set<Milestone> milestones;
+
+    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("project")
+    private Set<Comment> comments;
+
+    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("project")
+    private Set<ProjectFile> projectFiles;
 }

@@ -6,6 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Entity
@@ -15,7 +16,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-@Data
+
 public class Staff {
     @Id
     @GeneratedValue( strategy = GenerationType.AUTO)
@@ -42,7 +43,7 @@ public class Staff {
     private String password;
 
     @Column( name = "role", nullable = false)
-    @NotBlank(message = "Missing field. Staff Role is required.")
+    @NotNull(message = "Missing field. Staff Role is required.")
     @Enumerated(EnumType.STRING)
     private StaffRoles role;
 
