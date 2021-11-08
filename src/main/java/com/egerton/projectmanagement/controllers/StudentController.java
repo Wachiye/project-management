@@ -7,6 +7,7 @@ import com.egerton.projectmanagement.repositories.ProjectFileRepository;
 import com.egerton.projectmanagement.repositories.ProjectRepository;
 import com.egerton.projectmanagement.repositories.StudentRepository;
 import com.egerton.projectmanagement.requests.StudentRequest;
+import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -159,7 +160,8 @@ public class StudentController {
         student.setLastName(requestData.getLastName());
         student.setEmail(requestData.getEmail());
         student.setRegNo(requestData.getRegNo());
-        student.setPassword(requestData.getPassword()); //must be hashed
+//        student.setPassword(requestData.getPassword()); //must be hashed
+        student.setPassword(Password.hashpwd( requestData.getPassword()));
     }
 
     //delete student

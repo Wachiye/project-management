@@ -4,6 +4,7 @@ import com.egerton.projectmanagement.models.Staff;
 import com.egerton.projectmanagement.models.StaffRoles;
 import com.egerton.projectmanagement.repositories.StaffRepository;
 import com.egerton.projectmanagement.requests.StaffRequest;
+import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -150,7 +151,8 @@ public class StaffController {
         staff.setFirstName( requestData.getFirstName());
         staff.setLastName(requestData.getLastName());
         staff.setEmail(requestData.getEmail());
-        staff.setPassword(requestData.getPassword()); //must be hashed
+        //staff.setPassword(requestData.getPassword()); //must be hashed
+        staff.setPassword(Password.hashpwd( requestData.getPassword()));
         staff.setRole( StaffRoles.valueOf( requestData.getRole()));
     }
 
