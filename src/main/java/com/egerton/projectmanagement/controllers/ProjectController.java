@@ -17,7 +17,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/projects")
-@CrossOrigin
 public class ProjectController {
 
     @Autowired
@@ -179,7 +178,6 @@ public class ProjectController {
 
     protected void populateProject( Project project, ProjectRequest requestData){
         project.setName( requestData.getName());
-        project.setShortDesc( requestData.getShortDesc());
         project.setDescription(requestData.getDescription());
         project.setCategory(ProjectCategory.valueOf(requestData.getCategory()));
         project.setLanguages( requestData.getLanguages());

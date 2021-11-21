@@ -1,6 +1,6 @@
 package com.egerton.projectmanagement.filters;
 
-import com.egerton.projectmanagement.services.JwtStudentDetailsService;
+import com.egerton.projectmanagement.services.JwtUserDetailsService;
 import com.egerton.projectmanagement.utils.JwTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,7 +10,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.persistence.Column;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +19,7 @@ import java.io.IOException;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
-    private JwtStudentDetailsService studentDetailsService;
+    private JwtUserDetailsService userDetailsService;
     @Autowired
     private JwTokenUtil jwTokenUtil;
 
@@ -36,7 +35,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         if( username != null & SecurityContextHolder.getContext().getAuthentication() == null){
-            UserDetails userDetails = this.studentDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             if(jwTokenUtil.validateToken(jwtToken, userDetails)){
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
@@ -47,4 +46,5 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter( request, response);
     }
+
 }

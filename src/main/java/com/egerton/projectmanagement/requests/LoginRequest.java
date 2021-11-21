@@ -2,6 +2,7 @@ package com.egerton.projectmanagement.requests;
 
 import lombok.*;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 @NoArgsConstructor
@@ -12,11 +13,9 @@ import javax.validation.constraints.NotBlank;
 @Builder
 public class LoginRequest {
     @NotBlank(message = "Missing field. Email is required")
+    @Email(message = "Invalid email address")
     private String email;
 
     @NotBlank( message = "Missing field. Password is required")
     private String password;
-
-    @NotBlank( message = "Missing field. Role is required")
-    private  String role;
 }

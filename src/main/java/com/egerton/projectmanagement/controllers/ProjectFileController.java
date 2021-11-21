@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/v1/files")
+
 public class ProjectFileController {
     
     @Autowired

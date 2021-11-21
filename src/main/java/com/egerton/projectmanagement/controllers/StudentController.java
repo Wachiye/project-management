@@ -1,11 +1,11 @@
 package com.egerton.projectmanagement.controllers;
 
-import com.egerton.projectmanagement.models.Project;
-import com.egerton.projectmanagement.models.ProjectFile;
-import com.egerton.projectmanagement.models.Student;
+import com.egerton.projectmanagement.models.*;
 import com.egerton.projectmanagement.repositories.ProjectFileRepository;
 import com.egerton.projectmanagement.repositories.ProjectRepository;
 import com.egerton.projectmanagement.repositories.StudentRepository;
+import com.egerton.projectmanagement.repositories.UserRepository;
+import com.egerton.projectmanagement.requests.StaffRequest;
 import com.egerton.projectmanagement.requests.StudentRequest;
 import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,8 +23,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/students")
-public class StudentController {
 
+public class StudentController {
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private StudentRepository studentRepository;
 
@@ -90,17 +93,40 @@ public class StudentController {
         }
     }
 
-    //create student
-    @PostMapping()
+    //register student
+    @PostMapping("/register")
     public ResponseEntity<Object> createStudent(@Valid @RequestBody StudentRequest requestData){
         try{
-            //get data
-            Student student = new Student();
-            populateStudent(student, requestData);
-            student.setCreatedAt( new Date());
-            student.setUpdateAt( new Date());
+            //check email
+            if( userEmailExists( requestData.getEmail())){
+                return ResponseHandler.generateResponse(
+                        "Student Registration Failed. Email already exists.",
+                        HttpStatus.BAD_REQUEST,
+                        null
+                );
+            }
 
-            //save student
+            //check std reg no id
+            if( studentRegNoExists( requestData.getRegNo())){
+                return ResponseHandler.generateResponse(
+                        "Student Registration Failed. Registration No already exists.",
+                        HttpStatus.BAD_REQUEST,
+                        null
+                );
+            }
+
+            UserModel user = new UserModel();
+            populateUser( user, requestData);
+            user.setCreatedAt( new Date());
+
+            //save user
+            UserModel _user = userRepository.save( user);
+
+            Student student = new Student();
+            student.setUser( _user);
+            student.setRegNo( requestData.getRegNo());
+
+            //save std
             Student _student = studentRepository.save(student);
 
             return ResponseHandler.generateResponse(
@@ -118,19 +144,35 @@ public class StudentController {
         }
     }
 
+    private void populateUser(UserModel user, StudentRequest requestData) {
+        user.setFirstName( requestData.getFirstName());
+        user.setLastName(requestData.getLastName());
+        user.setEmail(requestData.getEmail());
+        user.setPassword(Password.hashpwd( requestData.getPassword()));
+        user.setRole( UserRoles.valueOf( requestData.getRole()));
+        user.setUpdateAt( new Date());
+    }
+
     //update student
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateStudent(@PathVariable("id") long id, @Valid @RequestBody StudentRequest requestData){
+    public ResponseEntity<Object> updateStudent(@PathVariable("id") long id, HttpServletRequest request){
         try{
             //find student by id
             Optional<Student> optionalStudent = studentRepository.findById(id);
-            if(optionalStudent.isPresent()) { //student found
+
+            if(optionalStudent.isPresent()) { //student account found
 
                 Student student = optionalStudent.get();
-                populateStudent(student, requestData);
-                student.setUpdateAt(new Date());
+                UserModel user = userRepository.findById( student.getUser().get_id()).get();
+
+                //update user details
+                user.setFirstName(request.getParameter("firstName"));
+                user.setLastName( request.getParameter("lastName"));
+                user.setEmail( request.getParameter("email"));
+                userRepository.save(user);
 
                 //save student
+                student.setRegNo( request.getParameter("regNo"));
                 Student _student = studentRepository.save(student);
 
                 return ResponseHandler.generateResponse(
@@ -155,14 +197,6 @@ public class StudentController {
         }
     }
 
-    protected void populateStudent( Student student, StudentRequest requestData){
-        student.setFirstName( requestData.getFirstName());
-        student.setLastName(requestData.getLastName());
-        student.setEmail(requestData.getEmail());
-        student.setRegNo(requestData.getRegNo());
-//        student.setPassword(requestData.getPassword()); //must be hashed
-        student.setPassword(Password.hashpwd( requestData.getPassword()));
-    }
 
     //delete student
     @DeleteMapping("/{id}")
@@ -296,5 +330,20 @@ public class StudentController {
                     null
             );
         }
+    }
+    protected boolean userEmailExists( String email){
+        Optional<UserModel> userOptional = userRepository.findUserByEmail( email);
+        if ( userOptional.isPresent()){
+            return  true;
+        }
+        return false;
+    }
+
+    protected  boolean studentRegNoExists( String regNo){
+        Optional<Student> studentOptional = studentRepository.findStudentByRegNo( regNo);
+        if ( studentOptional.isPresent()){
+            return  true;
+        }
+        return false;
     }
 }

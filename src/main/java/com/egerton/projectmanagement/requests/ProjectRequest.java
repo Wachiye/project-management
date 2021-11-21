@@ -16,9 +16,6 @@ public class ProjectRequest {
     @NotBlank(message = "Missing field. Project name is required.")
     private String name;
 
-    @NotBlank(message = "Missing field. Short description is required.")
-    private String shortDesc;
-
     @NotBlank(message = "Missing field. Project description is required.")
     private String description;
 

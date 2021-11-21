@@ -19,6 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/milestones")
+
 public class MilestoneController {
 
     @Autowired
@@ -289,7 +290,7 @@ public class MilestoneController {
             //find milestone
             Optional<Milestone> optionalMilestone = milestoneRepository.findById(id);
             if(optionalMilestone.isPresent()){//milestone found
-                milestoneRepository.delete(optionalMilestone.get());
+                milestoneRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,

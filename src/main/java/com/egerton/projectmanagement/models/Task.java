@@ -46,14 +46,6 @@ public class Task {
     @Column( name = "finished_on")
     private Date finishedOn;
 
-    @Column( name = "pessimistic_time")
-    @NotNull( message = "Missing field. Pessimistic Time is required.")
-    private int pessimisticTime;
-
-    @Column( name = "optimistic_time")
-    @NotNull( message = "Missing field. Optimistic Time is required.")
-    private int optimisticTime;
-
     @Column( name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -67,7 +59,7 @@ public class Task {
     private Date updateAt;
 
     @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "milestone_in")
+    @JoinColumn(name = "milestone_id", referencedColumnName = "_id")
     @JsonIgnoreProperties("tasks")
     private Milestone milestone;
 }

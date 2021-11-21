@@ -33,12 +33,4 @@ public class Login {
     @Column(name = "token", nullable = false)
     @NotBlank( message = "Missing field. Token cannot be blank")
     private String token;
-
-    @Column( name = "login_at", nullable = false)
-    @CreationTimestamp
-    private Date loginAt;
-
-    @Column( name = "logout_at", nullable = false)
-    @UpdateTimestamp
-    private Date logoutAt;
 }

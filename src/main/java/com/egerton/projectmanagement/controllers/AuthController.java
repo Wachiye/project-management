@@ -1,94 +1,134 @@
 package com.egerton.projectmanagement.controllers;
 
-import com.egerton.projectmanagement.models.Login;
-import com.egerton.projectmanagement.models.Staff;
-import com.egerton.projectmanagement.models.Student;
+import com.egerton.projectmanagement.models.*;
 import com.egerton.projectmanagement.repositories.LoginRepository;
-import com.egerton.projectmanagement.repositories.StaffRepository;
-import com.egerton.projectmanagement.repositories.StudentRepository;
+import com.egerton.projectmanagement.repositories.UserRepository;
 import com.egerton.projectmanagement.requests.LoginRequest;
-import com.egerton.projectmanagement.services.JwtStaffUserDetailsService;
-import com.egerton.projectmanagement.services.JwtStudentDetailsService;
+import com.egerton.projectmanagement.requests.PasswordRequest;
+import com.egerton.projectmanagement.requests.RegisterRequest;
+import com.egerton.projectmanagement.services.EmailService;
+import com.egerton.projectmanagement.services.JwtUserDetailsService;
 import com.egerton.projectmanagement.utils.JwTokenUtil;
 import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
+import net.bytebuddy.description.method.MethodList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+
 public class AuthController {
     @Autowired
     private LoginRepository loginRepository;
     @Autowired
-    private StudentRepository studentRepository;
+    private UserRepository userRepository;
     @Autowired
-    private StaffRepository staffRepository;
-    @Autowired
-    private JwtStudentDetailsService studentDetailsService;
-    @Autowired
-    private JwtStaffUserDetailsService staffUserDetailsService;
+    private JwtUserDetailsService userDetailsService;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwTokenUtil jwtTokenUtil;
 
-    @PostMapping("/login")
-    public ResponseEntity<Object> login(@Valid @RequestBody LoginRequest requestData) throws Exception {
-           String email = requestData.getEmail();
-           String password = requestData.getPassword();
-           String role = requestData.getRole();
+    @Value(value="spring.mail.username")
+    private String SYSTEM_EMAIL;
+    @Autowired
+    private EmailService emailService;
 
-        Login _login = new Login();
-        _login.setEmail( email);
-        _login.setRole( role);
-        _login.setLoginAt( new Date());
+    @PostMapping(value = "/register", consumes ="application/json" )
+    public ResponseEntity<Object> register(@Validated @RequestBody RegisterRequest requestData) {
+        try{
+            String email = requestData.getEmail();
+           Optional<UserModel> userOptional = userRepository.findUserByEmail( email);
+           if ( userOptional.isPresent()){
+               return ResponseHandler.generateResponse(
+                       "Registration Failed. Email already exists.",
+                       HttpStatus.BAD_REQUEST,
+                       null
+               );
+           }
 
-        boolean found = false;
+           UserModel userModel = new UserModel();
+           populateUser(userModel, requestData);
 
-            if( role.equalsIgnoreCase("student")) {
-                Optional<Student> optionalStudent = studentRepository.findStudentByEmail(email);
-                if( optionalStudent.isPresent() && Password.checkpw(password, optionalStudent.get().getPassword())){
-                   found = true;
-                }
-                else{
-                    found = false;
-                }
-            }
+           //save user
+            UserModel _userModel = userRepository.save(userModel);
 
-            else if( role.equalsIgnoreCase("staff")){
-                Optional<Staff> optionalStaff = staffRepository.findStaffByEmail(email);
-                if(optionalStaff.isPresent()){
-                    found = true;
-                }
-                else{
-                    found = false;
-                }
-            }
-
-        if((role.equalsIgnoreCase("student") || role.equalsIgnoreCase("staff")) && found){
-            return createLogin(_login);
-        } else {
             return ResponseHandler.generateResponse(
-                    "Login failed. Bad credentials",
+                    "User registration was successful.",
+                    HttpStatus.OK,
+                    _userModel
+            );
+        } catch (Exception e){
+            e.printStackTrace();
+            return ResponseHandler.generateResponse(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null
+            );
+        }
+    }
+
+    protected void populateUser(UserModel userModel, RegisterRequest requestData){
+        userModel.setFirstName( requestData.getFirstName());
+        userModel.setLastName(requestData.getLastName());
+        userModel.setEmail(requestData.getEmail());
+        userModel.setRole( UserRoles.valueOf( requestData.getRole()));
+        userModel.setPassword(Password.hashpwd( requestData.getPassword()));
+        userModel.setCreatedAt( new Date());
+        userModel.setUpdateAt( new Date());
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Object> login(@RequestBody LoginRequest requestData){
+        try {
+            //logout all active sessions
+            Optional<Login> _login = loginRepository.findLoginByEmail( requestData.getEmail());
+
+            if( _login.isPresent())
+                loginRepository.delete(_login.get());
+            UserModel user = userRepository.findUserByEmail(requestData.getEmail()).get();
+
+            final UserDetails userDetails = userDetailsService.loadUserByUsername(requestData.getEmail());;
+
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken( requestData.getEmail(), requestData.getPassword())
+            );
+
+            final String token = jwtTokenUtil.generateToken(userDetails);
+
+            Login login = new Login();
+            login.setRole( user.getRole().toString());
+            login.setEmail(requestData.getEmail());
+            login.setToken(token);
+
+            return  saveLogin(login);
+
+        } catch (BadCredentialsException ex){
+            ex.printStackTrace();
+            return ResponseHandler.generateResponse(
+                    "Invalid Email or Password",
                     HttpStatus.BAD_REQUEST,
                     null
             );
         }
 
     }
-
-    protected ResponseEntity<Object> createLogin( Login login){
+    protected ResponseEntity<Object> saveLogin( Login login){
         try {
             Login results = loginRepository.save( login);
             return ResponseHandler.generateResponse(
@@ -105,57 +145,137 @@ public class AuthController {
             );
         }
     }
-
-    @PostMapping("/authenticate")
-    public ResponseEntity<Object> authenticate(@RequestBody LoginRequest requestData){
+    @PostMapping("/logout")
+    public ResponseEntity<Object> logout(HttpServletRequest request){
         try {
+            final  String authHeader = request.getHeader("Authorization");
+            String jwtToken = authHeader.substring(7) ;
 
-            final UserDetails userDetails;
+            Optional<Login> login = loginRepository.findLoginByToken( jwtToken);
 
-            if( requestData.getRole().equalsIgnoreCase("student")){
-                System.out.println("Student");
-                userDetails = studentDetailsService.loadUserByUsername(requestData.getEmail());
-            } else if( requestData.getRole().equalsIgnoreCase("staff")){
-                System.out.println("Staff");
-                userDetails = staffUserDetailsService.loadUserByUsername(requestData.getEmail());
-            } else{
+            if( login.isPresent()){
+                Login _login = login.get();
+                loginRepository.delete( _login);
+
+                SecurityContextHolder.getContext().setAuthentication(null);
                 return ResponseHandler.generateResponse(
-                        "Error. Unknown Role. Expected student or staff",
-                        HttpStatus.BAD_REQUEST,
+                        "Logout was successful.",
+                        HttpStatus.OK,
                         null
                 );
             }
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken( requestData.getEmail(), requestData.getPassword())
-            );
-
-            final String token = jwtTokenUtil.generateToken(userDetails);
-
-            //TODO SAve the token to db
-            //TODO create logout router
             return ResponseHandler.generateResponse(
-                    "Login was successful",
-                    HttpStatus.OK,
-                    token
+                    "Auth Token not found. Please Login first",
+                    HttpStatus.BAD_REQUEST,
+                    null
             );
-        } catch (BadCredentialsException ex){
+        } catch (Exception ex){
             ex.printStackTrace();
             return ResponseHandler.generateResponse(
-                    "Invalid Email or Password",
-                    HttpStatus.BAD_REQUEST,
+                    ex.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
                     null
             );
         }
 
     }
 
-//    @PostMapping("/logout")
-//    public ResponseEntity<Object> logout(@Valid @RequestBody LoginRequest requestData){
-//
-//    }
-//
-//    @PostMapping("/pwd")
-//    public ResponseEntity<Object> changePassword(@Valid @RequestBody LoginRequest requestData){
-//
-//    }
+    @PostMapping("/pwd")
+    public ResponseEntity<Object> requestPassword(HttpServletRequest request){
+        try {
+            String email = request.getParameter("email");
+            Optional<UserModel> user = userRepository.findUserByEmail(email);
+            if(user.isPresent()){
+                UserModel _user = user.get();
+                String randomPassword = Password.getRandomPassword();
+
+                _user.setPassword( Password.hashpwd( randomPassword));
+                _user.setUpdateAt( new Date());
+                userRepository.save( _user);
+
+                //email user the random password
+                Email mail = new Email();
+                mail.setFrom( SYSTEM_EMAIL);
+                mail.setSenderName("APAMS EGERTON");
+                mail.setSubject("Password Reset Request");
+                mail.setTo(_user.getEmail());
+                mail.setText("<p> Hi" + _user.getLastName() +", please use the following password to login in. <br>" +
+                        "Password: " + randomPassword + "</p>");
+                mail.setAttachments(null);
+
+                if (emailService.sendHtml( mail) ) {
+                    return ResponseHandler.generateResponse(
+                            "Please check email for new password.",
+                            HttpStatus.OK,
+                            null
+                    );
+                }
+                return ResponseHandler.generateResponse(
+                        "Sorry, Server could not complete your request. Ensure you have an active internet connection and your email is valid.",
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        null
+                );
+            }
+            return ResponseHandler.generateResponse(
+                    "No user account exists with given email:" + email,
+                    HttpStatus.NOT_FOUND,
+                    null
+            );
+        } catch (Exception ex){
+            ex.printStackTrace();
+            return ResponseHandler.generateResponse(
+                    ex.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null
+            );
+        }
+
+    }
+
+    @PostMapping("/changepwd")
+    public ResponseEntity<Object> changePassword(@Valid @RequestBody PasswordRequest requestData){
+        try {
+            String oldPassword = requestData.getOldPassword();
+            String newPassword = requestData.getPassword();
+            String email = requestData.getEmail();
+
+            Optional<UserModel> user = userRepository.findUserByEmail(email);
+            if(user.isPresent()){
+                UserModel _user = user.get();
+                //check password
+                boolean pwdMatch = Password.checkpw(oldPassword, _user.getPassword());
+
+                if( pwdMatch){
+                    _user.setPassword( Password.hashpwd( newPassword));
+                    _user.setUpdateAt( new Date());
+                    userRepository.save( _user);
+
+                    return ResponseHandler.generateResponse(
+                            "Password changed successfully. Please use your new password to login next time",
+                            HttpStatus.OK,
+                            null
+                    );
+                }
+
+                return ResponseHandler.generateResponse(
+                        "Your old passwords don't match",
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        null
+                );
+            }
+            return ResponseHandler.generateResponse(
+                    "No user account exists with given email:" + email,
+                    HttpStatus.NOT_FOUND,
+                    null
+            );
+        } catch (Exception ex){
+            ex.printStackTrace();
+            return ResponseHandler.generateResponse(
+                    ex.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null
+            );
+        }
+
+    }
 }

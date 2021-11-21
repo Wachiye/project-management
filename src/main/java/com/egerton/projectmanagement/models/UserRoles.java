@@ -1,7 +1,8 @@
 package com.egerton.projectmanagement.models;
 
-public enum StaffRoles {
+public enum UserRoles {
     ADMINISTRATOR,
     EVALUATOR,
-    SUPERVISOR
+    SUPERVISOR,
+    STUDENT
 }

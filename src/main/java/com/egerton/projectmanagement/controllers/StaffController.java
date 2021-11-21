@@ -1,16 +1,20 @@
 package com.egerton.projectmanagement.controllers;
 
 import com.egerton.projectmanagement.models.Staff;
-import com.egerton.projectmanagement.models.StaffRoles;
+import com.egerton.projectmanagement.models.UserModel;
+import com.egerton.projectmanagement.models.UserRoles;
 import com.egerton.projectmanagement.repositories.StaffRepository;
+import com.egerton.projectmanagement.repositories.UserRepository;
 import com.egerton.projectmanagement.requests.StaffRequest;
 import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,11 +23,14 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/staff")
+
 public class StaffController {
 
     @Autowired
     private StaffRepository staffRepository;
 
+    @Autowired
+    private UserRepository userRepository;
     // get all staffs
     @GetMapping()
     public ResponseEntity<Object> getAllStaffs(){
@@ -82,14 +89,37 @@ public class StaffController {
     }
 
     //create staff
-    @PostMapping()
-    public ResponseEntity<Object> createStaff(@Valid @RequestBody StaffRequest requestData){
+    @PostMapping("/register")
+    public ResponseEntity<Object> createStaff( @Validated  @RequestBody StaffRequest requestData){
         try{
-            //get data
+            //check email
+            if( userEmailExists( requestData.getEmail())){
+                return ResponseHandler.generateResponse(
+                        "Staff Registration Failed. Email already exists.",
+                        HttpStatus.BAD_REQUEST,
+                        null
+                );
+            }
+
+            //check staff id
+            if( staffIdExists( requestData.getStaffId())){
+                return ResponseHandler.generateResponse(
+                        "Staff Registration Failed. Staff ID already exists.",
+                        HttpStatus.BAD_REQUEST,
+                        null
+                );
+            }
+
+            UserModel user = new UserModel();
+            populateUser( user, requestData);
+            user.setCreatedAt( new Date());
+
+            //save user
+            UserModel _user = userRepository.save( user);
+
             Staff staff = new Staff();
-            populateStaff(staff, requestData);
-            staff.setCreatedAt( new Date());
-            staff.setUpdateAt( new Date());
+            staff.setUser( _user);
+            staff.setStaffId( requestData.getStaffId());
 
             //save staff
             Staff _staff = staffRepository.save(staff);
@@ -111,17 +141,22 @@ public class StaffController {
 
     //update staff
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateStaff(@PathVariable("id") long id, @Valid @RequestBody StaffRequest requestData){
+    public ResponseEntity<Object> updateStaff(@PathVariable("id") long id, HttpServletRequest request){
         try{
             //find staff by id
             Optional<Staff> optionalStaff = staffRepository.findById(id);
             if(optionalStaff.isPresent()) { //staff found
 
                 Staff staff = optionalStaff.get();
-                populateStaff(staff, requestData);
-                staff.setUpdateAt(new Date());
+
+                UserModel user = userRepository.findById( staff.getUser().get_id()).get();
+                user.setFirstName(request.getParameter("firstName"));
+                user.setLastName( request.getParameter("lastName"));
+                user.setEmail( request.getParameter("email"));
+                userRepository.save(user);
 
                 //save staff
+                staff.setStaffId(request.getParameter("staffId"));
                 Staff _staff = staffRepository.save(staff);
 
                 return ResponseHandler.generateResponse(
@@ -146,14 +181,13 @@ public class StaffController {
         }
     }
 
-    protected void populateStaff( Staff staff, StaffRequest requestData){
-        staff.setStaffId( requestData.getStaffId());
-        staff.setFirstName( requestData.getFirstName());
-        staff.setLastName(requestData.getLastName());
-        staff.setEmail(requestData.getEmail());
-        //staff.setPassword(requestData.getPassword()); //must be hashed
-        staff.setPassword(Password.hashpwd( requestData.getPassword()));
-        staff.setRole( StaffRoles.valueOf( requestData.getRole()));
+    private void populateUser(UserModel user, StaffRequest requestData) {
+        user.setFirstName( requestData.getFirstName());
+        user.setLastName(requestData.getLastName());
+        user.setEmail(requestData.getEmail());
+        user.setPassword(Password.hashpwd( requestData.getPassword()));
+        user.setRole( UserRoles.valueOf( requestData.getRole()));
+        user.setUpdateAt( new Date());
     }
 
     //delete staff
@@ -205,34 +239,20 @@ public class StaffController {
         }
     }
 
-    // get all staffs
-    @GetMapping("/role/{role}")
-    public ResponseEntity<Object> getAllStaffsByRole(@PathVariable("role") String role){
-        try{
-            //empty array list of staffs
-            List<Staff> staffs = new ArrayList<>();
-            //get staffs and populate the array list
-            staffRepository.findAllByRole( StaffRoles.valueOf( role)).forEach( staffs::add);
-            if(staffs.isEmpty()){ // no staffs found
-                return  ResponseHandler.generateResponse(
-                        "No staff record was found",
-                        HttpStatus.NOT_FOUND,
-                        null
-                );
-            }
-            return ResponseHandler.generateResponse(
-                    null,
-                    HttpStatus.OK,
-                    staffs
-            );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+
+    protected boolean userEmailExists( String email){
+        Optional<UserModel> userOptional = userRepository.findUserByEmail( email);
+        if ( userOptional.isPresent()){
+            return  true;
         }
+        return false;
     }
 
+    protected  boolean staffIdExists( String staffId){
+        Optional<Staff> userOptional = staffRepository.findStaffByStaffId( staffId);
+        if ( userOptional.isPresent()){
+            return  true;
+        }
+        return false;
+    }
 }

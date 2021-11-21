@@ -31,10 +31,6 @@ public class Project {
     @NotBlank(message = "Missing field. Project name is required.")
     private String name;
 
-    @Column( name = "short_desc", nullable = false)
-    @NotBlank(message = "Missing field. Short description is required.")
-    private String shortDesc;
-
     @Column( name = "description", nullable = false)
     @NotBlank(message = "Missing field. Project description is required.")
     private String description;
@@ -62,12 +58,13 @@ public class Project {
     @Column( name = "finished_on")
     private Date finishedOn;
 
-    @Column( name = "evaluator_id", nullable = false)
-    @NotNull(message = "Missing field. Evaluator ID is required.")
-    private long evaluatorId;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="evaluator_id", referencedColumnName = "_id")
+    private Staff evaluator;
 
-    @Column( name = "supervisor_id")
-    private long supervisorId;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="supervisor_id", referencedColumnName = "_id")
+    private Staff supervisor;
 
     @Column( name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

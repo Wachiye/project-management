@@ -20,6 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
+
 public class TaskController {
 
     @Autowired
@@ -93,11 +94,12 @@ public class TaskController {
             Optional<Milestone> optionalMilestone = milestoneRepository.findById(requestData.getMilestoneId());
 
             if(optionalMilestone.isPresent()){
+                Milestone milestone = optionalMilestone.get();
                 //create task object
                 Task task = new Task();
                 //populate task object with data
                 populateTask(task, requestData);
-                task.setMilestone( optionalMilestone.get());
+                task.setMilestone( milestone);
                 task.setStatus(Status.PENDING);
                 task.setCreatedAt( new Date());
                 task.setUpdateAt( new Date());
@@ -113,7 +115,7 @@ public class TaskController {
             }
 
             return ResponseHandler.generateResponse(
-                    "Error. Could not create task. Student/Evaluator not found.",
+                    "Error. Could not create task. Milestone not found",
                     HttpStatus.NOT_FOUND,
                     null
             );

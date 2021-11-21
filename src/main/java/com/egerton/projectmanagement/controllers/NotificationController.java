@@ -19,6 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
+
 public class NotificationController {
     
     @Autowired

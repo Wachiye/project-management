@@ -2,7 +2,9 @@ package com.egerton.projectmanagement.requests;
 
 import lombok.*;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -10,8 +12,7 @@ import javax.validation.constraints.NotBlank;
 @Setter
 @Builder
 @Data
-public class StaffRequest{
-
+public class RegisterRequest {
     @NotBlank(message = "Missing field. First name is required.")
     private String firstName;
 
@@ -24,9 +25,6 @@ public class StaffRequest{
     @NotBlank(message = "Missing field. Password is required.")
     private String password;
 
-    @NotBlank(message = "Missing field. Role (Student/Staff")
+    @NotNull(message = "Missing field. Role (Student/Staff)")
     private String role;
-
-    @NotBlank(message = "Missing field. Staff ID  is required.")
-    private String staffId;
 }
