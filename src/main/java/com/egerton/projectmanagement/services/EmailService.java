@@ -43,6 +43,10 @@ public class EmailService {
 
             helper.setFrom(email.getFrom(), email.getSenderName());
             helper.setTo(email.getTo());
+
+            if( email.getCc() != null)
+                helper.setCc(email.getCc());
+
             helper.setSubject(email.getSubject());
             helper.setText(email.getText());
 

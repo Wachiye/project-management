@@ -5,7 +5,6 @@ import com.egerton.projectmanagement.repositories.ProjectFileRepository;
 import com.egerton.projectmanagement.repositories.ProjectRepository;
 import com.egerton.projectmanagement.repositories.StudentRepository;
 import com.egerton.projectmanagement.repositories.UserRepository;
-import com.egerton.projectmanagement.requests.StaffRequest;
 import com.egerton.projectmanagement.requests.StudentRequest;
 import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
@@ -14,12 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/students")
@@ -56,13 +52,8 @@ public class StudentController {
                     HttpStatus.OK,
                     students
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -83,13 +74,8 @@ public class StudentController {
                     null
             ));
             //student not found
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -134,13 +120,8 @@ public class StudentController {
                     HttpStatus.OK,
                     _student
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -154,7 +135,7 @@ public class StudentController {
     }
 
     //update student
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = "application/json")
     public ResponseEntity<Object> updateStudent(@PathVariable("id") long id, HttpServletRequest request){
         try{
             //find student by id
@@ -169,6 +150,11 @@ public class StudentController {
                 user.setFirstName(request.getParameter("firstName"));
                 user.setLastName( request.getParameter("lastName"));
                 user.setEmail( request.getParameter("email"));
+
+                Enumeration<String> params = request.getParameterNames();
+               while (params.hasMoreElements()){
+                    System.out.println(params);
+                }
                 userRepository.save(user);
 
                 //save student
@@ -187,13 +173,8 @@ public class StudentController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -217,13 +198,8 @@ public class StudentController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -237,13 +213,8 @@ public class StudentController {
                         HttpStatus.NO_CONTENT,
                         null
                 );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -280,13 +251,8 @@ public class StudentController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -322,13 +288,8 @@ public class StudentController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
     protected boolean userEmailExists( String email){

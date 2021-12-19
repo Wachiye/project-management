@@ -3,17 +3,17 @@ package com.egerton.projectmanagement.controllers;
 import com.egerton.projectmanagement.models.*;
 import com.egerton.projectmanagement.repositories.*;
 import com.egerton.projectmanagement.requests.ProjectRequest;
+import com.egerton.projectmanagement.services.EmailService;
 import com.egerton.projectmanagement.utils.ResponseHandler;
+import com.egerton.projectmanagement.utils.SettingsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/projects")
@@ -37,6 +37,14 @@ public class ProjectController {
     @Autowired
     private CommentRepository commentRepository;
 
+    @Autowired
+    private SettingRepository settingRepository;
+
+    @Value(value="spring.mail.username")
+    private String SYSTEM_EMAIL;
+
+    @Autowired
+    private EmailService emailService;
     // get all projects
     @GetMapping()
     public ResponseEntity<Object> getAllProjects(){
@@ -57,13 +65,8 @@ public class ProjectController {
                     HttpStatus.OK,
                     projects
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -84,13 +87,8 @@ public class ProjectController {
                     null
             ));
             // project not found
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -103,39 +101,59 @@ public class ProjectController {
             //find evaluator
             Optional<Staff> optionalEvaluator = staffRepository.findById(requestData.getEvaluatorId());
 
-            if(optionalStudent.isPresent() && optionalEvaluator.isPresent()){
-                //create project object
-                Project project = new Project();
-                //populate project object with data
-                populateProject(project, requestData);
-                project.setStudent( optionalStudent.get());
-                project.setStatus(Status.WAITING_APPROVAL);
-                project.setCreatedAt( new Date());
-                project.setUpdateAt( new Date());
+            Optional<Setting> optionalSetting = settingRepository.findSettingByYearAndCategory( new Date().getYear(), SettingCategory.PROJECT);
 
-                //save project
-                Project _project = projectRepository.save(project);
+            if(optionalSetting.isPresent()) {
+                if (!SettingsUtil.isActive(optionalSetting.get())) {
+                    return ResponseHandler.generateResponse(
+                            "Sorry. Cannot submit your Project. Project " +
+                                    "submission period is invalid. \r\n" +
+                                    "Start Date: " + optionalSetting.get().getStartDate().toString() + "\r\n"+
+                                    "End Date: " + optionalSetting.get().getEndDate(),
+                            HttpStatus.PRECONDITION_FAILED,
+                            null
+                    );
+                }
+                if(optionalStudent.isPresent() && optionalEvaluator.isPresent()){
+                    //create project object
+                    Project project = new Project();
+                    //populate project object with data
+                    populateProject(project, requestData);
+                    project.setStudent( optionalStudent.get());
+                    project.setEvaluator( optionalEvaluator.get());
+                    project.setStatus(Status.WAITING_APPROVAL);
+                    project.setCreatedAt( new Date());
+                    project.setUpdateAt( new Date());
+
+                    //save project
+                    Project _project = projectRepository.save(project);
+
+                    //send email to evaluator
+                    Student student = optionalStudent.get();
+                    Staff evaluator = optionalEvaluator.get();
+                    sendEvaluatorEmail(student, _project, evaluator);
+
+                    return ResponseHandler.generateResponse(
+                            "Project created successfully.",
+                            HttpStatus.OK,
+                            _project
+                    );
+                }
 
                 return ResponseHandler.generateResponse(
-                        "Project created successfully.",
-                        HttpStatus.OK,
-                        _project
+                        "Error. Could not create project. Student/Evaluator not found.",
+                        HttpStatus.NOT_FOUND,
+                        null
                 );
             }
-
             return ResponseHandler.generateResponse(
-                    "Error. Could not create project. Student/Evaluator not found.",
-                    HttpStatus.NOT_FOUND,
+                    "Sorry. Project Creation is not open. Contact Your Evaluator or Try again later.",
+                    HttpStatus.PRECONDITION_FAILED,
                     null
             );
 
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -166,13 +184,8 @@ public class ProjectController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -181,7 +194,6 @@ public class ProjectController {
         project.setDescription(requestData.getDescription());
         project.setCategory(ProjectCategory.valueOf(requestData.getCategory()));
         project.setLanguages( requestData.getLanguages());
-        project.setEvaluatorId(requestData.getEvaluatorId());
         project.setStartDate( requestData.getStartDate());
         project.setEndDate( requestData.getEndDate());
     }
@@ -216,13 +228,8 @@ public class ProjectController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -257,13 +264,8 @@ public class ProjectController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -298,13 +300,8 @@ public class ProjectController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -328,13 +325,8 @@ public class ProjectController {
                     HttpStatus.OK,
                     projects
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -353,10 +345,18 @@ public class ProjectController {
 
                 switch (_status){
                     case IN_PROGRESS:
-                        project.setStartedOn( new Date());
+                        project.setStartDate( new Date());
+                        project.setEndDate( null);
                         break;
                     case FINISHED:
-                        project.setFinishedOn( new Date());
+                        if(hasPendingMilestones(project)){
+                            return ResponseHandler.generateResponse(
+                                    "Project has pending milestones.",
+                                    HttpStatus.BAD_REQUEST,
+                                    null
+                            );
+                        }
+                        project.setEndDate( new Date());
                         break;
                     default: break;
                 }
@@ -365,6 +365,10 @@ public class ProjectController {
 
                 //save project
                 Project _project = projectRepository.save(project);
+
+                //send email to student
+                Student student = optionalProject.get().getStudent();
+                sendStatusEmail( student, project);
 
                 return ResponseHandler.generateResponse(
                         "Project status changed successful.",
@@ -378,13 +382,65 @@ public class ProjectController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
+        }
+    }
+    private  boolean hasPendingMilestones(Project project){
+        Set<Milestone> milestones =project.getMilestones();
+        for (Milestone m: milestones) {
+            if(m.getStatus().compareTo( Status.FINISHED) != 0 )
+                return true;
+        }
+        return false;
+    }
+    // change supervisor
+    @PutMapping("/{id}/supervisor/{supervisorId}")
+    public ResponseEntity<Object> setSupervisor(@PathVariable("id") long id, @PathVariable("supervisorId") long supervisorId){
+        try{
+
+            //find project by id
+            Optional<Project> optionalProject = projectRepository.findById(id);
+            //find supervisor by id
+            Optional<Staff> optionalStaff = staffRepository.findById(supervisorId);
+            if(optionalProject.isPresent() && optionalStaff.isPresent()) { //project and supervisor found
+
+                Project project = optionalProject.get();
+                Staff supervisor = optionalStaff.get();
+                Student student = optionalProject.get().getStudent();
+
+                if( supervisor.getUser().getRole().toString().equals("SUPERVISOR")){
+                    project.setSupervisor( supervisor);
+                    project.setUpdateAt(new Date());
+
+                    //save project
+                    Project _project = projectRepository.save(project);
+
+                    //email to student and supervisor
+                    sendSupervisorAssignmentEmail(student, project);
+
+                    return ResponseHandler.generateResponse(
+                            "Project assigned supervisor successful.",
+                            HttpStatus.OK,
+                            _project
+                    );
+                }
+
+                return ResponseHandler.generateResponse(
+                        "Selected User is not a supervisor.",
+                        HttpStatus.BAD_REQUEST,
+                        null
+                );
+
+            }
+            // project not found
             return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Project / Supervisor not found",
+                    HttpStatus.NOT_FOUND,
                     null
             );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
     // get all projects by category
@@ -407,13 +463,8 @@ public class ProjectController {
                     HttpStatus.OK,
                     projects
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -436,13 +487,8 @@ public class ProjectController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -456,14 +502,84 @@ public class ProjectController {
                     HttpStatus.NO_CONTENT,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+            return ResponseHandler.generateResponse(exception);
         }
     }
 
+    protected void sendEvaluatorEmail(Student student, Project project, Staff evaluator){
+
+        Email email = new Email();
+        email.setFrom( this.SYSTEM_EMAIL);
+        email.setSenderName("Academic Project");
+        email.setTo( evaluator.getUser().getEmail());
+
+        String subject = student.getUser().getLastName() + "(" + student.getRegNo().replace("/","_") + ")" +
+                " has created a project";
+        email.setSubject(subject);
+
+        String text = "<p>Hi, " + evaluator.getUser().getLastName() + "</p>" +
+                "<p>Your student: <b>" + student.getUser().getFullName() + " of Reg No" + student.getRegNo() + "</b> has created a new project </p>" +
+                "<p>Project:" + project.getName() + " </p/> </br>" +
+                "<article>" + project.getDescription().substring(0, 200) + "... </article>" +
+                "<hr />";
+
+        text += "<p> Please login to the system to review the project </p>";
+
+        text += "<p> -" + project.getEvaluator().getUser().getFirstName() + " " + project.getEvaluator().getUser().getLastName() + "<br />" +
+                "Project Evaluator </p>";
+
+        email.setText(text);
+        email.setAttachments(null);
+
+        emailService.sendHtml( email);
+    }
+    protected void sendStatusEmail(Student student, Project project){
+        Email email = new Email();
+        email.setFrom( this.SYSTEM_EMAIL);
+        email.setSenderName("Academic Project");
+        email.setTo( student.getUser().getEmail());
+        email.setCc( project.getSupervisor().getUser().getEmail());
+        email.setSubject("Your project Has been" + project.getStatus().toString());
+
+        String text = "<p>Hello, " + student.getUser().getFirstName() + " " + student.getUser().getLastName() + "</p>" +
+                "<p> Your Project: <b>" + project.getName() + "</b> has been " + project.getStatus().toString() +" </p>";
+
+        if(project.getStatus().toString().equals("ACCEPTED"))
+            text += "<p> We hope that the online platform will help you manage your project effectively <br />" +
+                    "Good luck as you tackle your project. </p>";
+
+        text += "<p> -" + project.getEvaluator().getUser().getFirstName() + " " + project.getEvaluator().getUser().getLastName() + "<br />" +
+                "Project Evaluator </p>";
+
+        email.setText(text);
+        email.setAttachments(null);
+
+        emailService.sendHtml( email);
+    }
+
+    protected void sendSupervisorAssignmentEmail(Student student, Project project){
+        Email email = new Email();
+        email.setFrom( this.SYSTEM_EMAIL);
+        email.setSenderName("Academic Project");
+        email.setTo( student.getUser().getEmail());
+        email.setSubject("Project Supervisor Assigned");
+
+        String text = "<p>Hi, " + student.getUser().getLastName() + "</p>" +
+                "<p> Project: <b>" + project.getName() + "</b> has been assigned a new Supervisor </p>";
+
+        text += "<strong>Supervisor: </strong>" + project.getSupervisor().getUser().getFirstName() + " " + project.getSupervisor().getUser().getLastName() + "\r\n" +
+                "<strong>Student: </strong>" + student.getUser().getFirstName() + " " + student.getUser().getLastName() + "\r\n";
+
+            text += "<p> We hope that the online platform will help you manage your project effectively <br />" +
+                    "Good luck as you tackle your project. </p>";
+
+        text += "<p> -" + project.getEvaluator().getUser().getFirstName() + " " + project.getEvaluator().getUser().getLastName() + "<br />" +
+                "Project Evaluator </p>";
+
+        email.setText(text);
+        email.setAttachments(null);
+
+        emailService.sendHtml( email);
+    }
 }

@@ -43,13 +43,29 @@ public class UserController {
                     HttpStatus.OK,
                     users
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
+        }
+    }
+    // get user by email
+    @GetMapping("/{email}")
+    public ResponseEntity<Object> getUserByEmail(@PathVariable String email){
+        try{
+            Optional<UserModel> user  = userRepository.findUserByEmail(email);
+            if(user.isPresent()){ // found
+                return ResponseHandler.generateResponse(
+                        null,
+                        HttpStatus.OK,
+                        user.get()
+                );
+            }
+            return  ResponseHandler.generateResponse(
+                    "No user record was found with email: " + email,
+                    HttpStatus.NOT_FOUND,
                     null
             );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -73,13 +89,8 @@ public class UserController {
                     HttpStatus.OK,
                     users
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
     //delete user
@@ -101,13 +112,8 @@ public class UserController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -121,13 +127,8 @@ public class UserController {
                     HttpStatus.NO_CONTENT,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 }

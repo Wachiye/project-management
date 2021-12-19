@@ -1,13 +1,7 @@
 package com.egerton.projectmanagement.controllers;
 
-import com.egerton.projectmanagement.models.Comment;
-import com.egerton.projectmanagement.models.Project;
-import com.egerton.projectmanagement.models.Staff;
-import com.egerton.projectmanagement.models.Student;
-import com.egerton.projectmanagement.repositories.CommentRepository;
-import com.egerton.projectmanagement.repositories.ProjectRepository;
-import com.egerton.projectmanagement.repositories.StaffRepository;
-import com.egerton.projectmanagement.repositories.StudentRepository;
+import com.egerton.projectmanagement.models.*;
+import com.egerton.projectmanagement.repositories.*;
 import com.egerton.projectmanagement.requests.CommentRequest;
 import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +24,7 @@ public class CommentController {
     private CommentRepository commentRepository;
 
     @Autowired
-    private StaffRepository staffRepository;
-    
-    @Autowired
-    private StudentRepository studentRepository;
+    private UserRepository userRepository;
     
     @Autowired
     private ProjectRepository projectRepository;
@@ -58,13 +49,8 @@ public class CommentController {
                     HttpStatus.OK,
                     comments
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -85,13 +71,8 @@ public class CommentController {
                     null
             ));
             //comment not found
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -101,18 +82,16 @@ public class CommentController {
         try{
             //find project
             Optional<Project> optionalProject = projectRepository.findById(requestData.getProjectId());
-            //find student
-            Optional<Student> optionalStudent = studentRepository.findById(requestData.getStudentId());
-            //find student
-            Optional<Staff> optionalStaff = staffRepository.findById(requestData.getStaffId());
 
-            if(optionalProject.isPresent() && optionalStudent.isPresent() && optionalStaff.isPresent()) {
+            //find student
+            Optional<UserModel> optionalUser = userRepository.findById(requestData.getUserId());
+
+            if(optionalProject.isPresent() && optionalUser.isPresent()) {
                 //get data
                 Comment comment = new Comment();
                 populateComment(comment, requestData);
                 comment.setProject( optionalProject.get());
-                comment.setStudent( optionalStudent.get());
-                comment.setStaff( optionalStaff.get());
+                comment.setUser( optionalUser.get());
                 comment.setCreatedAt(new Date());
                 comment.setUpdateAt(new Date());
 
@@ -126,18 +105,13 @@ public class CommentController {
                 );
             }
             return ResponseHandler.generateResponse(
-                    "Error. Could not post comment. Student/Staff/Project not found.",
+                    "Error. Could not post comment. User/ Project not found.",
                     HttpStatus.OK,
                     null
             );
 
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -168,13 +142,8 @@ public class CommentController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -201,13 +170,8 @@ public class CommentController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -221,13 +185,8 @@ public class CommentController {
                     HttpStatus.NO_CONTENT,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 

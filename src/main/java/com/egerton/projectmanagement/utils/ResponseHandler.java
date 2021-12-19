@@ -15,4 +15,13 @@ public class ResponseHandler {
 
         return new ResponseEntity<Object>(map,status);
     }
+
+    public static ResponseEntity<Object> generateResponse(Exception e){
+        e.printStackTrace();
+        return ResponseHandler.generateResponse(
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                null
+        );
+    }
 }

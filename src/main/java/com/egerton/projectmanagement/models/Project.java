@@ -1,10 +1,8 @@
 package com.egerton.projectmanagement.models;
 
+import com.egerton.projectmanagement.utils.DateUtil;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -31,7 +29,7 @@ public class Project {
     @NotBlank(message = "Missing field. Project name is required.")
     private String name;
 
-    @Column( name = "description", nullable = false)
+    @Column( name = "description", nullable = false, columnDefinition = "TEXT")
     @NotBlank(message = "Missing field. Project description is required.")
     private String description;
 
@@ -44,19 +42,11 @@ public class Project {
     @NotBlank(message = "Missing field. Project languages is required.")
     private String languages;
 
-    @Column( name = "start_date", nullable = false)
-    @NotNull(message = "Missing field. Project Start Date is required.")
+    @Column( name = "start_date")
     private Date startDate;
 
-    @Column( name = "end_date", nullable = false)
-    @NotNull(message = "Missing field. Project End Date is required.")
+    @Column( name = "end_date")
     private Date endDate;
-
-    @Column( name = "started_on")
-    private Date startedOn;
-
-    @Column( name = "finished_on")
-    private Date finishedOn;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="evaluator_id", referencedColumnName = "_id")
@@ -94,4 +84,18 @@ public class Project {
     @OneToMany( mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("project")
     private Set<ProjectFile> projectFiles;
+
+    @Transient
+    private long projectDays;
+
+    @Transient
+    private long daysLeft;
+
+    public long getProjectDays() {
+        return DateUtil.getDaysBetween( startDate, endDate);
+    }
+
+    public long getDaysLeft() {
+        return DateUtil.getDaysBetween( new Date(), endDate);
+    }
 }

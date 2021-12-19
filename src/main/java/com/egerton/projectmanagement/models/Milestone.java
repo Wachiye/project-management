@@ -1,5 +1,6 @@
 package com.egerton.projectmanagement.models;
 
+import com.egerton.projectmanagement.utils.DateUtil;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
@@ -31,19 +32,11 @@ public class Milestone {
     @NotBlank(message = "Missing field. Milestone name is required.")
     private String name;
 
-    @Column( name = "start_date", nullable = false)
-    @NotNull(message = "Missing field. Milestone Start Date is required.")
+    @Column( name = "start_date")
     private Date startDate;
 
-    @Column( name = "end_date", nullable = false)
-    @NotNull(message = "Missing field. Milestone End Date is required.")
+    @Column( name = "end_date")
     private Date endDate;
-
-    @Column( name = "started_on")
-    private Date startedOn;
-
-    @Column( name = "finished_on")
-    private Date finishedOn;
 
     @Column( name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -65,4 +58,18 @@ public class Milestone {
     @OneToMany( mappedBy = "milestone", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("milestone")
     private Set<Task> tasks;
+
+    @Transient
+    private long milestoneDays;
+
+    @Transient
+    private long daysLeft;
+
+    public long getMilestoneDays() {
+        return DateUtil.getDaysBetween( endDate, startDate);
+    }
+
+    public long getDaysLeft() {
+        return DateUtil.getDaysBetween(endDate, new Date());
+    }
 }

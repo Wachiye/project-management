@@ -27,7 +27,7 @@ public class ProjectFile {
     @NotBlank(message = "Missing field. Project name is required.")
     private String name;
 
-    @Column( name = "description", nullable = false)
+    @Column( name = "description", nullable = false,  columnDefinition = "TEXT")
     @NotBlank(message = "Missing field. Task description is required.")
     private String description;
 
@@ -46,11 +46,6 @@ public class ProjectFile {
     @Column( name = "update_at", nullable = false)
     @LastModifiedDate
     private Date updateAt;
-
-    @ManyToOne( targetEntity = Student.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "student_id")
-    @JsonIgnoreProperties("projectFiles")
-    private Student student;
 
     @ManyToOne( targetEntity = Project.class, cascade = CascadeType.ALL)
     @JoinColumn(name = "project_id")

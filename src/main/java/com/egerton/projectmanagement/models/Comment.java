@@ -24,12 +24,13 @@ public class Comment {
     @GeneratedValue( strategy = GenerationType.AUTO)
     private long _id;
 
-    @Column( name = "message", nullable = false)
+    @Column( name = "message", nullable = false,  columnDefinition = "TEXT")
     @NotBlank(message = "Missing field. Message is required.")
     private String message;
 
     @Column( name = "created_at", nullable = false)
     @CreatedDate
+    @OrderBy
     private Date createdAt;
 
     @Column( name = "update_at", nullable = false)
@@ -37,17 +38,11 @@ public class Comment {
     private Date updateAt;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn( name = "project_id")
+    @JoinColumn( name = "project_id", referencedColumnName = "_id")
     @JsonIgnoreProperties("comments")
     private Project project;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn( name = "student_id")
-    @JsonIgnoreProperties("comments")
-    private Student student;
-
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn( name = "staff_id")
-    @JsonIgnoreProperties("comments")
-    private Staff staff;
+    @JoinColumn( name = "user_id", referencedColumnName = "_id")
+    private UserModel user;
 }

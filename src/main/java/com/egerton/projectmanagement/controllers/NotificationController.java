@@ -48,13 +48,8 @@ public class NotificationController {
                     HttpStatus.OK,
                     notifications
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -75,13 +70,8 @@ public class NotificationController {
                     null
             ));
             //notification not found
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -96,6 +86,7 @@ public class NotificationController {
                 //get data
                 Notification notification = new Notification();
                 populateNotification(notification, requestData);
+		notification.setPostedBy( optionalStaff.get());
                 notification.setCreatedAt(new Date());
                 notification.setUpdateAt(new Date());
 
@@ -109,18 +100,13 @@ public class NotificationController {
                 );
             }
             return ResponseHandler.generateResponse(
-                    "Error. Could not post notification. Student/Staff/Project not found.",
+                    "Error. Could not post notification.Staff not found",
                     HttpStatus.OK,
                     null
             );
 
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -151,20 +137,14 @@ public class NotificationController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
     protected void populateNotification( Notification notification, NotificationRequest requestData){
         notification.setMessage( requestData.getMessage());
         notification.setTitle(requestData.getTitle());
-        notification.setStaffId(requestData.getStaffId());
         notification.setType(NotificationTypes.valueOf( requestData.getType()));
     }
 
@@ -188,13 +168,8 @@ public class NotificationController {
                     HttpStatus.OK,
                     notifications
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -217,13 +192,8 @@ public class NotificationController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -237,13 +207,8 @@ public class NotificationController {
                     HttpStatus.NO_CONTENT,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 }

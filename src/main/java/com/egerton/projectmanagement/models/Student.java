@@ -31,12 +31,4 @@ public class Student {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("student")
     private Set<Project> projects;
-
-    @OneToMany(mappedBy = "student",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonIgnoreProperties("student")
-    private Set<ProjectFile> projectFiles;
-
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonIgnoreProperties("student")
-    private Set<Comment> comments;
 }

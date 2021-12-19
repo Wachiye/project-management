@@ -19,11 +19,7 @@ public class CommentRequest {
     @NotNull(message = "Missing field. Project ID is required.")
     private long projectId;
 
-    @Column( name = "staff_id", nullable = false)
-    @NotNull(message = "Missing field. Staff ID is required.")
-    private long staffId;
+    @NotNull(message = "Missing field. User ID is required.")
+    private long userId;
 
-    @Column( name = "student_id", nullable = false)
-    @NotNull(message = "Missing field. Student ID is required.")
-    private long studentId;
 }

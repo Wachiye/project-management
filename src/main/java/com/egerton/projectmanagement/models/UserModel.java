@@ -46,4 +46,11 @@ public class UserModel {
     @Column( name = "update_at", nullable = false)
     @LastModifiedDate
     private Date updateAt;
+
+    @Transient
+    private String fullName;
+
+    public String getFullName(){
+        return firstName + " " + lastName;
+    }
 }

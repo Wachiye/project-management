@@ -1,9 +1,11 @@
 package com.egerton.projectmanagement.controllers;
 
 import com.egerton.projectmanagement.models.Milestone;
+import com.egerton.projectmanagement.models.Project;
 import com.egerton.projectmanagement.models.Status;
 import com.egerton.projectmanagement.models.Task;
 import com.egerton.projectmanagement.repositories.MilestoneRepository;
+import com.egerton.projectmanagement.repositories.ProjectRepository;
 import com.egerton.projectmanagement.repositories.TaskRepository;
 import com.egerton.projectmanagement.requests.TaskRequest;
 import com.egerton.projectmanagement.utils.ResponseHandler;
@@ -13,10 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
@@ -28,6 +27,9 @@ public class TaskController {
 
     @Autowired
     private MilestoneRepository milestoneRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     // get all tasks
     @GetMapping()
@@ -49,13 +51,8 @@ public class TaskController {
                     HttpStatus.OK,
                     tasks
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -76,13 +73,8 @@ public class TaskController {
                     null
             ));
             // task not found
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -120,13 +112,8 @@ public class TaskController {
                     null
             );
 
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -157,13 +144,8 @@ public class TaskController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -194,13 +176,8 @@ public class TaskController {
                     HttpStatus.OK,
                     tasks
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -214,7 +191,39 @@ public class TaskController {
             if(optionalTask.isPresent()) { //task found
 
                 Task task = optionalTask.get();
-                task.setStatus( Status.valueOf(status));
+                Milestone milestone = task.getMilestone();
+
+                Status _status = Status.valueOf(status);
+
+                task.setStatus( _status);
+
+                switch (_status){
+                    case IN_PROGRESS:
+                        if( milestone.getStartDate() == null || milestone.getStatus().compareTo( Status.IN_PROGRESS) != 0){
+                            milestone.setStatus( Status.IN_PROGRESS);
+                            milestone.setStartDate( new Date());
+                            milestoneRepository.save( milestone);
+                        }
+                        task.setStartDate( new Date());
+                        task.setEndDate( null);
+                        break;
+                    case FINISHED:
+                        task.setEndDate( new Date());
+                        if( isFinalTaskInMilestone(task, milestone )){
+                            milestone.setEndDate( new Date());
+                            milestone.setStatus( Status.FINISHED);
+                            milestoneRepository.save( milestone);
+                        }
+                        if( isFinalTaskInProject( task, milestone.getProject())){
+                            Project project = milestone.getProject();
+                            project.setStatus(Status.FINISHED);
+                            project.setEndDate( new Date());
+                            projectRepository.save(project);
+                        }
+                        break;
+                    default: break;
+                }
+
                 task.setUpdateAt(new Date());
 
                 //save task
@@ -232,16 +241,35 @@ public class TaskController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
+    private boolean isFinalTaskInMilestone( Task task, Milestone milestone){
+        Set<Task> tasks = milestone.getTasks();
+
+        for (Task t: tasks) {
+            if(t.get_id() != task.get_id() && task.getStatus().compareTo( Status.FINISHED) != 0 )
+                return  false;
+        }
+
+        return true;
+    }
+
+    private  boolean isFinalTaskInProject( Task task, Project project){
+        Set<Task> tasks = null ;
+        project.getMilestones().forEach( milestone -> {
+            if(milestone.getTasks() != null)
+                tasks.addAll(milestone.getTasks());
+        });
+
+        for (Task t: tasks) {
+            if(t.get_id() != task.get_id() && task.getStatus().compareTo( Status.FINISHED) != 0 )
+                return  false;
+        }
+        return  true;
+    }
     //delete task
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteTask(@PathVariable("id") long id){
@@ -262,13 +290,8 @@ public class TaskController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -282,13 +305,8 @@ public class TaskController {
                     HttpStatus.NO_CONTENT,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 

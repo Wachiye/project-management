@@ -14,7 +14,8 @@ public class Email {
     private String from;
     private String senderName;
     private String to;
+    private String cc = null;
     private String subject;
     private String text;
-    private ArrayList<String> attachments;
+    private ArrayList<String> attachments = null;
 }

@@ -12,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/milestones")
@@ -51,13 +48,8 @@ public class MilestoneController {
                     HttpStatus.OK,
                     milestones
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+            return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -78,13 +70,8 @@ public class MilestoneController {
                     null
             ));
             // milestone not found
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+            return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -121,13 +108,8 @@ public class MilestoneController {
                     null
             );
 
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -158,13 +140,8 @@ public class MilestoneController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -205,13 +182,8 @@ public class MilestoneController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
     
@@ -235,13 +207,8 @@ public class MilestoneController {
                     HttpStatus.OK,
                     milestones
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -255,7 +222,39 @@ public class MilestoneController {
             if(optionalMilestone.isPresent()) { //milestone found
 
                 Milestone milestone = optionalMilestone.get();
-                milestone.setStatus( Status.valueOf(status));
+                Project project = milestone.getProject();
+
+                Status _status = Status.valueOf(status);
+                milestone.setStatus( _status);
+
+                switch (_status){
+                    case IN_PROGRESS:
+                        if( project.getStartDate() == null || project.getStatus().compareTo( Status.IN_PROGRESS) != 0){
+                            project.setStatus( Status.IN_PROGRESS);
+                            project.setStartDate( new Date());
+                            projectRepository.save( project);
+                        }
+                        milestone.setStartDate( new Date());
+                        milestone.setEndDate( null);
+                        break;
+                    case FINISHED:
+                        if (hasPendingTasks(milestone)){
+                            return ResponseHandler.generateResponse(
+                                    "Milestone has pending tasks.",
+                                    HttpStatus.BAD_REQUEST,
+                                    null
+                            );
+                        }
+                        if( isFinalMilestone(milestone, project )){
+                            project.setEndDate( new Date());
+                            project.setStatus( Status.FINISHED);
+                            milestoneRepository.save( milestone);
+                        }
+                        milestone.setEndDate( new Date());
+                        break;
+                    default: break;
+                }
+
                 milestone.setUpdateAt(new Date());
 
                 //save milestone
@@ -273,16 +272,26 @@ public class MilestoneController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
-    
+    private  boolean hasPendingTasks(Milestone milestone){
+        Set<Task> tasks = milestone.getTasks();
+        for (Task t: tasks) {
+            if(t.getStatus().compareTo( Status.FINISHED) != 0 )
+               return true;
+        }
+        return false;
+    }
+    private boolean isFinalMilestone( Milestone milestone, Project project){
+        Set<Milestone> milestones = project.getMilestones();
+        for (Milestone m: milestones) {
+            if(m.get_id() != milestone.get_id() && milestone.getStatus().compareTo( Status.FINISHED) != 0 )
+                return  false;
+        }
+        return true;
+    }
     //delete milestone
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteMilestone(@PathVariable("id") long id){
@@ -303,13 +312,8 @@ public class MilestoneController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -323,13 +327,8 @@ public class MilestoneController {
                     HttpStatus.NO_CONTENT,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 }

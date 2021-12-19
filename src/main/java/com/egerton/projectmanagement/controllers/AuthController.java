@@ -11,7 +11,6 @@ import com.egerton.projectmanagement.services.JwtUserDetailsService;
 import com.egerton.projectmanagement.utils.JwTokenUtil;
 import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
-import net.bytebuddy.description.method.MethodList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -73,13 +72,8 @@ public class AuthController {
                     HttpStatus.OK,
                     _userModel
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -136,13 +130,8 @@ public class AuthController {
                     HttpStatus.OK,
                     results
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
     @PostMapping("/logout")

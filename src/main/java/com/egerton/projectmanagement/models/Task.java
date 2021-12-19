@@ -1,5 +1,6 @@
 package com.egerton.projectmanagement.models;
 
+import com.egerton.projectmanagement.utils.DateUtil;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -32,19 +33,11 @@ public class Task {
     @NotBlank(message = "Missing field. Task description is required.")
     private String description;
 
-    @Column( name = "start_date", nullable = false)
-    @NotNull(message = "Missing field. Task Start Date is required.")
+    @Column( name = "start_date")
     private Date startDate;
 
-    @Column( name = "end_date", nullable = false)
-    @NotNull(message = "Missing field. Task End Date is required.")
+    @Column( name = "end_date")
     private Date endDate;
-
-    @Column( name = "started_on")
-    private Date startedOn;
-
-    @Column( name = "finished_on")
-    private Date finishedOn;
 
     @Column( name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -62,4 +55,18 @@ public class Task {
     @JoinColumn(name = "milestone_id", referencedColumnName = "_id")
     @JsonIgnoreProperties("tasks")
     private Milestone milestone;
+
+    @Transient
+    private long taskDays;
+
+    @Transient
+    private long daysLeft;
+
+    public long getTaskDays() {
+        return DateUtil.getDaysBetween( endDate, startDate);
+    }
+
+    public long getDaysLeft() {
+        return DateUtil.getDaysBetween(new Date(), endDate);
+    }
 }

@@ -25,7 +25,7 @@ public class Notification {
     @NotBlank(message = "Missing Field. Title is required")
     private String title;
 
-    @Column( name = "message", nullable = false)
+    @Column( name = "message", nullable = false,  columnDefinition = "TEXT")
     @NotBlank(message = "Missing Field. Message is required")
     private String message;
 
@@ -33,9 +33,9 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     private NotificationTypes type;
 
-    @Column( name = "staff_id", nullable = false)
-    @NotNull(message = "Missing Field. Staff ID is required")
-    private long staffId;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="posted_by", referencedColumnName = "_id")
+    private Staff postedBy;
 
     @Column( name = "created_at", nullable = false)
     @CreatedDate

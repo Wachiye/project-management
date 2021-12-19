@@ -1,9 +1,9 @@
 package com.egerton.projectmanagement.controllers;
 
-import com.egerton.projectmanagement.models.Staff;
-import com.egerton.projectmanagement.models.UserModel;
-import com.egerton.projectmanagement.models.UserRoles;
+import com.egerton.projectmanagement.models.*;
+import com.egerton.projectmanagement.repositories.ProjectRepository;
 import com.egerton.projectmanagement.repositories.StaffRepository;
+import com.egerton.projectmanagement.repositories.StudentRepository;
 import com.egerton.projectmanagement.repositories.UserRepository;
 import com.egerton.projectmanagement.requests.StaffRequest;
 import com.egerton.projectmanagement.utils.Password;
@@ -13,9 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +28,13 @@ public class StaffController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
+
     // get all staffs
     @GetMapping()
     public ResponseEntity<Object> getAllStaffs(){
@@ -51,13 +55,8 @@ public class StaffController {
                     HttpStatus.OK,
                     staffs
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -78,14 +77,90 @@ public class StaffController {
                     null
             ));
             //staff not found
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
+        }
+    }
+    //get projects
+    @GetMapping("/{id}/projects")
+    public ResponseEntity<Object> getProjects(@PathVariable("id") long id) {
+        try {
+            //find staff by id
+            Optional<Staff> optionalStaff = staffRepository.findById(id);
+            if (optionalStaff.isPresent()) {
+
+                List<Project> projects = this.getProjects(optionalStaff);
+                if(projects.isEmpty()) {
+                    return  ResponseHandler.generateResponse(
+                            "No Projects record was found",
+                            HttpStatus.NOT_FOUND,
+                            null
+                    );
+                }
+                return  ResponseHandler.generateResponse(
+                        null,
+                        HttpStatus.OK,
+                        projects
+                );
+            }
+            return  ResponseHandler.generateResponse(
+                    "No Staff record was found",
+                    HttpStatus.NOT_FOUND,
                     null
             );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
+    }
+
+    //get students
+    @GetMapping("/{id}/students")
+    public ResponseEntity<Object> getStudents(@PathVariable("id") long id){
+        try{
+            //find staff by id
+            Optional<Staff> optionalStaff = staffRepository.findById(id);
+            if(optionalStaff.isPresent()){
+
+                List<Project> projects = this.getProjects( optionalStaff);
+                List<Student> students = null;
+
+                if(!projects.isEmpty()){
+                   projects.forEach( project ->  students.add( project.getStudent()));
+                }
+
+                if(students.isEmpty()){ // no student found
+                    return  ResponseHandler.generateResponse(
+                            "No Student record was found",
+                            HttpStatus.NOT_FOUND,
+                            null
+                    );
+                }
+                return ResponseHandler.generateResponse(
+                        null,
+                        HttpStatus.OK,
+                        students
+                );
+            }
+
+            return  ResponseHandler.generateResponse(
+                    "Staff not was found",
+                    HttpStatus.NOT_FOUND,
+                    null
+            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
+        }
+    }
+
+    protected List<Project> getProjects( Optional<Staff> optionalStaff){
+        List<Project> projects = null;
+
+        if( optionalStaff.get().getUser().getRole().toString().equals("SUPERVISOR")){
+            projects = projectRepository.findAllBySupervisor( optionalStaff.get());
+        } else{
+            projects = projectRepository.findAllByEvaluator( optionalStaff.get());
+        }
+        return  projects;
     }
 
     //create staff
@@ -129,19 +204,14 @@ public class StaffController {
                     HttpStatus.OK,
                     _staff
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
     //update staff
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateStaff(@PathVariable("id") long id, HttpServletRequest request){
+    public ResponseEntity<Object> updateStaff(@PathVariable("id") long id, @RequestBody StaffRequest request){
         try{
             //find staff by id
             Optional<Staff> optionalStaff = staffRepository.findById(id);
@@ -150,13 +220,13 @@ public class StaffController {
                 Staff staff = optionalStaff.get();
 
                 UserModel user = userRepository.findById( staff.getUser().get_id()).get();
-                user.setFirstName(request.getParameter("firstName"));
-                user.setLastName( request.getParameter("lastName"));
-                user.setEmail( request.getParameter("email"));
+                user.setFirstName(request.getFirstName());
+                user.setLastName( request.getLastName());
+                user.setEmail( request.getEmail());
                 userRepository.save(user);
 
                 //save staff
-                staff.setStaffId(request.getParameter("staffId"));
+                staff.setStaffId(request.getStaffId());
                 Staff _staff = staffRepository.save(staff);
 
                 return ResponseHandler.generateResponse(
@@ -171,13 +241,8 @@ public class StaffController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -209,13 +274,8 @@ public class StaffController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -229,13 +289,8 @@ public class StaffController {
                     HttpStatus.NO_CONTENT,
                     null
             );
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        }catch(Exception exception){
+        return ResponseHandler.generateResponse(exception);
         }
     }
 
