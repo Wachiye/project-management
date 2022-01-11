@@ -9,9 +9,10 @@ import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+
 import java.util.*;
 
 @RestController
@@ -77,7 +78,7 @@ public class MilestoneController {
 
     //create milestone
     @PostMapping()
-    public ResponseEntity<Object> createMilestone(@Valid @RequestBody MilestoneRequest requestData){
+    public ResponseEntity<Object> createMilestone(@Validated @RequestBody MilestoneRequest requestData){
         try{
             //find project
             Optional<Project> optionalProject = projectRepository.findById(requestData.getProjectId());
@@ -115,7 +116,7 @@ public class MilestoneController {
 
     //update milestone
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateMilestone(@PathVariable("id") long id, @Valid @RequestBody MilestoneRequest requestData){
+    public ResponseEntity<Object> updateMilestone(@PathVariable("id") long id, @Validated @RequestBody MilestoneRequest requestData){
         try{
             //find milestone by id
             Optional<Milestone> optionalMilestone = milestoneRepository.findById(id);

@@ -33,9 +33,9 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     private NotificationTypes type;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="posted_by", referencedColumnName = "_id")
-    private Staff postedBy;
+    @ManyToOne( targetEntity = UserModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn( name = "posted_by", referencedColumnName = "_id")
+    private UserModel postedBy;
 
     @Column( name = "created_at", nullable = false)
     @CreatedDate

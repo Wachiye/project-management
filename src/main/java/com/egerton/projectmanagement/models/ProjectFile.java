@@ -7,7 +7,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Entity
@@ -51,4 +50,5 @@ public class ProjectFile {
     @JoinColumn(name = "project_id")
     @JsonIgnoreProperties("projectFiles")
     private Project project;
+
 }

@@ -14,6 +14,7 @@ public class Email {
     private String from;
     private String senderName;
     private String to;
+    private String[] toMany = null;
     private String cc = null;
     private String subject;
     private String text;

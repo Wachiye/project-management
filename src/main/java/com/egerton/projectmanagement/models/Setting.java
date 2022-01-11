@@ -4,6 +4,7 @@ import com.egerton.projectmanagement.utils.SettingsUtil;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Entity
@@ -22,6 +23,8 @@ public class Setting {
     private int year;
 
     @Column(name = "setting")
+    @NotNull(message = "Missing field. Setting category is required.")
+    @Enumerated(EnumType.STRING)
     private SettingCategory category;
 
     @Column(name = "startDate")

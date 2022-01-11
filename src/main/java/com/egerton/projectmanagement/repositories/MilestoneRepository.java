@@ -3,6 +3,7 @@ package com.egerton.projectmanagement.repositories;
 import com.egerton.projectmanagement.models.Milestone;
 import com.egerton.projectmanagement.models.Project;
 import com.egerton.projectmanagement.models.Status;
+import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

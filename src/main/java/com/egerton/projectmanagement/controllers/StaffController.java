@@ -3,16 +3,19 @@ package com.egerton.projectmanagement.controllers;
 import com.egerton.projectmanagement.models.*;
 import com.egerton.projectmanagement.repositories.ProjectRepository;
 import com.egerton.projectmanagement.repositories.StaffRepository;
-import com.egerton.projectmanagement.repositories.StudentRepository;
 import com.egerton.projectmanagement.repositories.UserRepository;
 import com.egerton.projectmanagement.requests.StaffRequest;
+import com.egerton.projectmanagement.requests.StaffUpdate;
+import com.egerton.projectmanagement.services.EmailService;
 import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
+import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,9 +35,9 @@ public class StaffController {
     @Autowired
     private ProjectRepository projectRepository;
 
-    @Autowired
-    private StudentRepository studentRepository;
 
+    @Autowired
+    private EmailService emailService;
     // get all staffs
     @GetMapping()
     public ResponseEntity<Object> getAllStaffs(){
@@ -165,7 +168,7 @@ public class StaffController {
 
     //create staff
     @PostMapping("/register")
-    public ResponseEntity<Object> createStaff( @Validated  @RequestBody StaffRequest requestData){
+    public ResponseEntity<Object> createStaff(@Validated  @RequestBody StaffRequest requestData){
         try{
             //check email
             if( userEmailExists( requestData.getEmail())){
@@ -187,10 +190,17 @@ public class StaffController {
 
             UserModel user = new UserModel();
             populateUser( user, requestData);
+
+            //generate verification code
+            String randomCode = RandomString.make(64);
+            user.setActive(false);
+            user.setVerificationCode(randomCode);
             user.setCreatedAt( new Date());
 
             //save user
             UserModel _user = userRepository.save( user);
+
+            emailService.sendVerificationCode( user, requestData.getVerificationURL());
 
             Staff staff = new Staff();
             staff.setUser( _user);
@@ -211,7 +221,7 @@ public class StaffController {
 
     //update staff
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateStaff(@PathVariable("id") long id, @RequestBody StaffRequest request){
+    public ResponseEntity<Object> updateStaff(@PathVariable("id") long id, @RequestBody StaffUpdate requestData){
         try{
             //find staff by id
             Optional<Staff> optionalStaff = staffRepository.findById(id);
@@ -219,14 +229,16 @@ public class StaffController {
 
                 Staff staff = optionalStaff.get();
 
-                UserModel user = userRepository.findById( staff.getUser().get_id()).get();
-                user.setFirstName(request.getFirstName());
-                user.setLastName( request.getLastName());
-                user.setEmail( request.getEmail());
+                UserModel user =staff.getUser();
+                user.setFirstName(requestData.getFirstName());
+                user.setLastName( requestData.getLastName());
+                user.setEmail( requestData.getEmail());
+                user.setRole(  UserRoles.valueOf(requestData.getRole()));
+                user.setUpdateAt( new Date());
                 userRepository.save(user);
 
                 //save staff
-                staff.setStaffId(request.getStaffId());
+                staff.setStaffId(requestData.getStaffId());
                 Staff _staff = staffRepository.save(staff);
 
                 return ResponseHandler.generateResponse(
@@ -262,7 +274,7 @@ public class StaffController {
             //find staff
             Optional<Staff> optionalStaff = staffRepository.findById(id);
             if(optionalStaff.isPresent()){//staff found
-                staffRepository.delete(optionalStaff.get());
+                staffRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,

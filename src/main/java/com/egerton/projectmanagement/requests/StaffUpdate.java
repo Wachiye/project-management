@@ -4,14 +4,13 @@ import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Builder
 @Data
-public class StudentRequest{
+public class StaffUpdate {
     @NotBlank(message = "Missing field. First name is required.")
     private String firstName;
 
@@ -22,15 +21,9 @@ public class StudentRequest{
     @Email(message = "Invalid email address")
     private String email;
 
-    @NotBlank(message = "Missing field. Password is required.")
-    private String password;
+    @NotBlank(message = "Missing field. Staff.  is required.")
+    private String staffId;
 
-    @NotBlank(message = "Missing field. Role (Student/Staff")
+    @NotBlank(message = "Missing field. Role is required")
     private String role;
-
-    @NotBlank(message = "Missing field. Reg No.  is required.")
-    private String regNo;
-
-    @NotBlank( message =  "Missing field. Verification URL is required.")
-    private String verificationURL;
 }

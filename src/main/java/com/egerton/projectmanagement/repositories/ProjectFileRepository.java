@@ -13,5 +13,4 @@ import java.util.List;
 public interface ProjectFileRepository extends JpaRepository<ProjectFile, Long> {
     List<ProjectFile> findAllByProject( Project project);
     List<ProjectFile> findAllByStatus( Status status);
-    List<ProjectFile> findAllByStudent( Student student);
 }

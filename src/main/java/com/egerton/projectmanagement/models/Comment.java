@@ -17,7 +17,6 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-
 public class Comment {
 
     @Id

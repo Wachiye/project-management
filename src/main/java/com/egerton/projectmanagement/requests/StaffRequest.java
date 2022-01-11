@@ -29,4 +29,7 @@ public class StaffRequest{
 
     @NotBlank(message = "Missing field. Staff ID  is required.")
     private String staffId;
+
+    @NotBlank( message =  "Missing field. Verification URL is required.")
+    private String verificationURL;
 }

@@ -4,15 +4,17 @@ import com.egerton.projectmanagement.models.*;
 import com.egerton.projectmanagement.repositories.*;
 import com.egerton.projectmanagement.requests.ProjectRequest;
 import com.egerton.projectmanagement.services.EmailService;
+import com.egerton.projectmanagement.utils.DateUtil;
 import com.egerton.projectmanagement.utils.ResponseHandler;
 import com.egerton.projectmanagement.utils.SettingsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+
 import java.util.*;
 
 @RestController
@@ -94,14 +96,14 @@ public class ProjectController {
 
     //create project
     @PostMapping()
-    public ResponseEntity<Object> createProject(@Valid @RequestBody ProjectRequest requestData){
+    public ResponseEntity<Object> createProject(@Validated @RequestBody ProjectRequest requestData){
         try{
             //find student
             Optional<Student> optionalStudent = studentRepository.findById(requestData.getStudentId());
             //find evaluator
             Optional<Staff> optionalEvaluator = staffRepository.findById(requestData.getEvaluatorId());
 
-            Optional<Setting> optionalSetting = settingRepository.findSettingByYearAndCategory( new Date().getYear(), SettingCategory.PROJECT);
+            Optional<Setting> optionalSetting = settingRepository.findSettingByYearAndCategory( DateUtil.thisYear() , SettingCategory.PROJECT);
 
             if(optionalSetting.isPresent()) {
                 if (!SettingsUtil.isActive(optionalSetting.get())) {
@@ -159,7 +161,7 @@ public class ProjectController {
 
     //update project
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateProject(@PathVariable("id") long id, @Valid @RequestBody ProjectRequest requestData){
+    public ResponseEntity<Object> updateProject(@PathVariable("id") long id, @Validated @RequestBody ProjectRequest requestData){
         try{
             //find project by id
             Optional<Project> optionalProject = projectRepository.findById(id);
@@ -387,9 +389,9 @@ public class ProjectController {
         }
     }
     private  boolean hasPendingMilestones(Project project){
-        Set<Milestone> milestones =project.getMilestones();
-        for (Milestone m: milestones) {
-            if(m.getStatus().compareTo( Status.FINISHED) != 0 )
+        Set<Milestone> milestones = project.getMilestones();
+        for (Milestone milestone: milestones) {
+            if(milestone.getStatus().compareTo( Status.FINISHED) != 0 )
                 return true;
         }
         return false;
@@ -475,7 +477,7 @@ public class ProjectController {
             //find project
             Optional<Project> optionalProject = projectRepository.findById(id);
             if(optionalProject.isPresent()){//project found
-                projectRepository.delete(optionalProject.get());
+                projectRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,
@@ -511,7 +513,7 @@ public class ProjectController {
 
         Email email = new Email();
         email.setFrom( this.SYSTEM_EMAIL);
-        email.setSenderName("Academic Project");
+        email.setSenderName("Academic Project Approval And Management System");
         email.setTo( evaluator.getUser().getEmail());
 
         String subject = student.getUser().getLastName() + "(" + student.getRegNo().replace("/","_") + ")" +
@@ -521,7 +523,7 @@ public class ProjectController {
         String text = "<p>Hi, " + evaluator.getUser().getLastName() + "</p>" +
                 "<p>Your student: <b>" + student.getUser().getFullName() + " of Reg No" + student.getRegNo() + "</b> has created a new project </p>" +
                 "<p>Project:" + project.getName() + " </p/> </br>" +
-                "<article>" + project.getDescription().substring(0, 200) + "... </article>" +
+                "<article>" + project.getDescription() + "</article>" +
                 "<hr />";
 
         text += "<p> Please login to the system to review the project </p>";
@@ -537,7 +539,7 @@ public class ProjectController {
     protected void sendStatusEmail(Student student, Project project){
         Email email = new Email();
         email.setFrom( this.SYSTEM_EMAIL);
-        email.setSenderName("Academic Project");
+        email.setSenderName("Academic Project Approval And Management System");
         email.setTo( student.getUser().getEmail());
         email.setCc( project.getSupervisor().getUser().getEmail());
         email.setSubject("Your project Has been" + project.getStatus().toString());
@@ -561,7 +563,7 @@ public class ProjectController {
     protected void sendSupervisorAssignmentEmail(Student student, Project project){
         Email email = new Email();
         email.setFrom( this.SYSTEM_EMAIL);
-        email.setSenderName("Academic Project");
+        email.setSenderName("Academic Project Approval And Management System");
         email.setTo( student.getUser().getEmail());
         email.setSubject("Project Supervisor Assigned");
 

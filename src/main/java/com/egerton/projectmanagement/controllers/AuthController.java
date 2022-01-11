@@ -11,6 +11,7 @@ import com.egerton.projectmanagement.services.JwtUserDetailsService;
 import com.egerton.projectmanagement.utils.JwTokenUtil;
 import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
+import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+
 import java.util.Date;
 import java.util.Optional;
 
@@ -49,7 +50,7 @@ public class AuthController {
     private EmailService emailService;
 
     @PostMapping(value = "/register", consumes ="application/json" )
-    public ResponseEntity<Object> register(@Validated @RequestBody RegisterRequest requestData) {
+    public ResponseEntity<Object> register(@Validated @RequestBody RegisterRequest requestData, HttpServletRequest request) {
         try{
             String email = requestData.getEmail();
            Optional<UserModel> userOptional = userRepository.findUserByEmail( email);
@@ -67,13 +68,18 @@ public class AuthController {
            //save user
             UserModel _userModel = userRepository.save(userModel);
 
+            //site url
+            String siteURL = request.getRequestURL().toString();
+
+            emailService.sendVerificationCode( userModel, siteURL);
+
             return ResponseHandler.generateResponse(
                     "User registration was successful.",
                     HttpStatus.OK,
                     _userModel
             );
         } catch(Exception exception){
-        return ResponseHandler.generateResponse(exception);
+            return ResponseHandler.generateResponse(exception);
         }
     }
 
@@ -85,32 +91,53 @@ public class AuthController {
         userModel.setPassword(Password.hashpwd( requestData.getPassword()));
         userModel.setCreatedAt( new Date());
         userModel.setUpdateAt( new Date());
+
+        //generate verification code
+        String randomCode = RandomString.make(64);
+        userModel.setActive(false);
+        userModel.setVerificationCode(randomCode);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody LoginRequest requestData){
+    public ResponseEntity<Object> login(@RequestBody LoginRequest requestData, HttpServletRequest request){
         try {
             //logout all active sessions
             Optional<Login> _login = loginRepository.findLoginByEmail( requestData.getEmail());
 
             if( _login.isPresent())
-                loginRepository.delete(_login.get());
+                loginRepository.deleteById(_login.get().get_id());
             UserModel user = userRepository.findUserByEmail(requestData.getEmail()).get();
 
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(requestData.getEmail());;
+            if(user.isActive()){
+                final UserDetails userDetails = userDetailsService.loadUserByUsername(requestData.getEmail());;
 
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken( requestData.getEmail(), requestData.getPassword())
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken( requestData.getEmail(), requestData.getPassword())
+                );
+
+                final String token = jwtTokenUtil.generateToken(userDetails);
+
+                Login login = new Login();
+                login.setRole( user.getRole().toString());
+                login.setEmail(requestData.getEmail());
+                login.setToken(token);
+
+                return  saveLogin(login);
+            }
+            String verificationCode = null;
+            if(user.getVerificationCode() == null){
+                verificationCode = RandomString.make(64);
+                user.setVerificationCode( verificationCode);
+                userRepository.save( user);
+            }
+            // TODO Obtain the client URL
+            emailService.sendVerificationCode( user, request.getRequestURL().toString());
+
+            return ResponseHandler.generateResponse(
+                    "Login failed. Your account is not verified. Please check email to verify and try again.",
+                    HttpStatus.UNAUTHORIZED,
+                    null
             );
-
-            final String token = jwtTokenUtil.generateToken(userDetails);
-
-            Login login = new Login();
-            login.setRole( user.getRole().toString());
-            login.setEmail(requestData.getEmail());
-            login.setToken(token);
-
-            return  saveLogin(login);
 
         } catch (BadCredentialsException ex){
             ex.printStackTrace();
@@ -131,7 +158,7 @@ public class AuthController {
                     results
             );
         } catch(Exception exception){
-        return ResponseHandler.generateResponse(exception);
+            return ResponseHandler.generateResponse(exception);
         }
     }
     @PostMapping("/logout")
@@ -144,7 +171,7 @@ public class AuthController {
 
             if( login.isPresent()){
                 Login _login = login.get();
-                loginRepository.delete( _login);
+                loginRepository.deleteById(_login.get_id());
 
                 SecurityContextHolder.getContext().setAuthentication(null);
                 return ResponseHandler.generateResponse(
@@ -210,19 +237,14 @@ public class AuthController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception ex){
-            ex.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    ex.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+            return ResponseHandler.generateResponse(exception);
         }
 
     }
 
     @PostMapping("/changepwd")
-    public ResponseEntity<Object> changePassword(@Valid @RequestBody PasswordRequest requestData){
+    public ResponseEntity<Object> changePassword(@Validated @RequestBody PasswordRequest requestData){
         try {
             String oldPassword = requestData.getOldPassword();
             String newPassword = requestData.getPassword();
@@ -257,14 +279,35 @@ public class AuthController {
                     HttpStatus.NOT_FOUND,
                     null
             );
-        } catch (Exception ex){
-            ex.printStackTrace();
-            return ResponseHandler.generateResponse(
-                    ex.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    null
-            );
+        } catch(Exception exception){
+            return ResponseHandler.generateResponse(exception);
         }
 
     }
+
+    @GetMapping("/verify/{code}")
+    public ResponseEntity<Object> verifyAccount( @PathVariable("code") String code){
+        try{
+            Optional<UserModel> user = userRepository.findUserModelByVerificationCode(code);
+            if(user.isPresent()) {
+                UserModel _user = user.get();
+                _user.setActive( true);
+                userRepository.save( _user);
+                return ResponseHandler.generateResponse(
+                        "Hi " + _user.getFullName() + ". Your account has been verificated. Use Your email and password to login",
+                        HttpStatus.OK,
+                        null
+                );
+            }
+            return ResponseHandler.generateResponse(
+                    "Verification failed. Invalid Verification Code",
+                    HttpStatus.NOT_FOUND,
+                    null
+            );
+
+        } catch(Exception exception){
+            return ResponseHandler.generateResponse(exception);
+        }
+    }
+
 }

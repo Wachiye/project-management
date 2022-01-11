@@ -11,5 +11,5 @@ import java.util.Optional;
 @Repository
 public interface SettingRepository extends JpaRepository<Setting, Long> {
     List<Setting> findAllByYear(int year);
-    Optional<Setting> findSettingByYearAndCategory(int year, SettingCategory setting);
+    Optional<Setting> findSettingByYearAndCategory(int year, SettingCategory category);
 }

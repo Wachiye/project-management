@@ -2,13 +2,15 @@ package com.egerton.projectmanagement.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,8 +47,18 @@ public class FileService{
         }
     }
 
-    public Resource load(String filename) {
-        return null;
+    public ByteArrayResource load(String fileURL) {
+        if(fileURL == null)
+            return null;
+        try{
+            // Get a ByteArrayResource from the URL
+            URL url = new URL(fileURL);
+            InputStream inputStream = url.openStream();
+            byte[] out = inputStream.readAllBytes();
+            return new ByteArrayResource(out);
+        } catch (Exception exception){
+            return null;
+        }
     }
 
     //convert to file

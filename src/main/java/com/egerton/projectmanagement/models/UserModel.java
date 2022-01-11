@@ -7,7 +7,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Entity
@@ -38,6 +37,12 @@ public class UserModel {
     @Column( name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRoles role;
+
+    @Column(name = "active")
+    private boolean active;
+
+    @Column(name = "verification_code", updatable = false)
+    private String verificationCode;
 
     @Column( name = "created_at", nullable = false)
     @CreatedDate

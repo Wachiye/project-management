@@ -17,11 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.validation.Valid;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -101,7 +102,7 @@ public class ProjectFileController {
 
     //create project file
     @PostMapping()
-    public ResponseEntity<Object> createProjectFile(HttpServletRequest request, @Valid @ModelAttribute ProjectFileRequest requestData, @RequestPart("file") MultipartFile file){
+    public ResponseEntity<Object> createProjectFile(HttpServletRequest request, @Validated @ModelAttribute ProjectFileRequest requestData, @RequestPart("file") MultipartFile file){
         try{
             //find project
             Optional<Project> optionalProject = projectRepository.findById(requestData.getProjectId());
@@ -187,7 +188,7 @@ public class ProjectFileController {
 
     //update projectFile
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateProjectFile(@PathVariable("id") long id, @Valid @RequestBody ProjectFileRequest requestData){
+    public ResponseEntity<Object> updateProjectFile(@PathVariable("id") long id, @Validated @RequestBody ProjectFileRequest requestData){
         try{
             //find projectFile by id
             Optional<ProjectFile> optionalProjectFile = fileRepository.findById(id);
@@ -294,7 +295,7 @@ public class ProjectFileController {
             //find project file
             Optional<ProjectFile> optionalProjectFile = fileRepository.findById(id);
             if(optionalProjectFile.isPresent()){//project file found
-                fileRepository.delete(optionalProjectFile.get());
+                fileRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,

@@ -12,9 +12,10 @@ import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+
 import java.util.*;
 
 @RestController
@@ -80,7 +81,7 @@ public class TaskController {
 
     //create task
     @PostMapping()
-    public ResponseEntity<Object> createTask(@Valid @RequestBody TaskRequest requestData){
+    public ResponseEntity<Object> createTask(@Validated @RequestBody TaskRequest requestData){
         try{
             //find milestone
             Optional<Milestone> optionalMilestone = milestoneRepository.findById(requestData.getMilestoneId());
@@ -119,7 +120,7 @@ public class TaskController {
 
     //update task
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateTask(@PathVariable("id") long id, @Valid @RequestBody TaskRequest requestData){
+    public ResponseEntity<Object> updateTask(@PathVariable("id") long id, @Validated @RequestBody TaskRequest requestData){
         try{
             //find task by id
             Optional<Task> optionalTask = taskRepository.findById(id);
@@ -277,7 +278,7 @@ public class TaskController {
             //find task
             Optional<Task> optionalTask = taskRepository.findById(id);
             if(optionalTask.isPresent()){//task found
-                taskRepository.delete(optionalTask.get());
+                taskRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,

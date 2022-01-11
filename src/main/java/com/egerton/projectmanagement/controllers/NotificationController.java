@@ -3,15 +3,19 @@ package com.egerton.projectmanagement.controllers;
 import com.egerton.projectmanagement.models.*;
 import com.egerton.projectmanagement.repositories.NotificationRepository;
 import com.egerton.projectmanagement.repositories.StaffRepository;
+import com.egerton.projectmanagement.repositories.UserRepository;
 import com.egerton.projectmanagement.requests.CommentRequest;
 import com.egerton.projectmanagement.requests.NotificationRequest;
+import com.egerton.projectmanagement.services.EmailService;
 import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +31,15 @@ public class NotificationController {
 
     @Autowired
     private StaffRepository staffRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Value(value="spring.mail.username")
+    private String SYSTEM_EMAIL;
+
+    @Autowired
+    private EmailService emailService;
 
     // get all notifications
     @GetMapping()
@@ -77,24 +90,30 @@ public class NotificationController {
 
     //create notification
     @PostMapping()
-    public ResponseEntity<Object> createNotification(@Valid @RequestBody NotificationRequest requestData){
+    public ResponseEntity<Object> createNotification(@Validated @RequestBody NotificationRequest requestData){
         try{
-            //find staff
-            Optional<Staff> optionalStaff = staffRepository.findById(requestData.getStaffId());
+            //find user
+            Optional<UserModel> optionalUser = userRepository.findById(requestData.getUserId());
 
-            if(optionalStaff.isPresent()) {
+            if(optionalUser.isPresent()) {
                 //get data
                 Notification notification = new Notification();
+                NotificationTypes notificationType = NotificationTypes.valueOf( requestData.getType());
+
                 populateNotification(notification, requestData);
-		notification.setPostedBy( optionalStaff.get());
+                notification.setPostedBy( optionalUser.get());
                 notification.setCreatedAt(new Date());
                 notification.setUpdateAt(new Date());
 
                 //save notification
                 Notification _notification = notificationRepository.save(notification);
 
+                //send emails
+                this.notifyUsers(notification);
+
+                //return
                 return ResponseHandler.generateResponse(
-                        "Notification was posted successful.",
+                        "Notification was send successful.",
                         HttpStatus.OK,
                         _notification
                 );
@@ -112,7 +131,7 @@ public class NotificationController {
 
     //update notification
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateNotification(@PathVariable("id") long id, @Valid @RequestBody NotificationRequest requestData){
+    public ResponseEntity<Object> updateNotification(@PathVariable("id") long id, @Validated @RequestBody NotificationRequest requestData){
         try{
             //find notification by id
             Optional<Notification> optionalNotification = notificationRepository.findById(id);
@@ -180,7 +199,7 @@ public class NotificationController {
             //find notification
             Optional<Notification> optionalNotification = notificationRepository.findById(id);
             if(optionalNotification.isPresent()){//notification found
-                notificationRepository.delete(optionalNotification.get());
+                notificationRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,
@@ -208,7 +227,42 @@ public class NotificationController {
                     null
             );
         }catch(Exception exception){
-        return ResponseHandler.generateResponse(exception);
+            return ResponseHandler.generateResponse(exception);
         }
+    }
+
+    protected void notifyUsers(Notification notification){
+        //get users based on notification type
+        NotificationTypes notificationType = notification.getType();
+        List<UserModel> users = new ArrayList<>();
+
+        if( notificationType.compareTo( NotificationTypes.SYSTEM) == 0){
+            users = userRepository.findAll();
+        } else {
+            users = userRepository.findAllByRole( UserRoles.valueOf( notificationType.toString()));
+        }
+
+        //get emails
+        StringBuilder toEmails = new StringBuilder();
+
+        for (int i = 0; i < users.size(); i++) {
+            if( i == users.size() - 1)
+                toEmails.append(users.get(i).getEmail());
+            else
+                toEmails.append(users.get(i).getEmail()).append(",");
+        }
+
+        //compose email
+        Email email = new Email();
+        email.setFrom( this.SYSTEM_EMAIL);
+        email.setSenderName("Academic Project Approval And Management System");
+        email.setTo(null);
+        email.setToMany( toEmails.toString().split(","));
+        email.setSubject("APAMS: " + notification.getTitle());
+        email.setText( notification.getMessage());
+        email.setAttachments(null);
+
+        //send email
+        emailService.sendHtml( email);
     }
 }

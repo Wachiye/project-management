@@ -45,7 +45,8 @@ public class SettingController {
     @GetMapping("/year/{year}")
     public ResponseEntity<Object> getSettingsByYear(@PathVariable int year) {
         try {
-            List<Setting> settings = null;
+            List<Setting> settings = new ArrayList<>();
+            System.out.println();
             settingRepository.findAllByYear(year).forEach(settings::add);
             if (settings.isEmpty()) { // no settings found
                 return ResponseHandler.generateResponse(
@@ -72,7 +73,7 @@ public class SettingController {
 
             if(optionalSetting.isPresent()){
                 return ResponseHandler.generateResponse(
-                        "Error. " + category + " for year " + requestData.getYear() + " already exists.",
+                        "Error. Setting for " + category + " Submission for year " + requestData.getYear() + " already exists.",
                         HttpStatus.BAD_REQUEST,
                         null
                 );
@@ -99,12 +100,12 @@ public class SettingController {
             Optional<Setting> optionalSetting = settingRepository.findById( id);
 
             if(optionalSetting.isPresent()){
-                Setting setting = new Setting();
+                Setting setting = optionalSetting.get();
                 populateSetting(setting, requestData);
                 Setting _setting = settingRepository.save( setting);
 
                 return ResponseHandler.generateResponse(
-                        "Setting was saved successful.",
+                        "Setting was updated successful.",
                         HttpStatus.OK,
                         _setting
                 );
@@ -133,7 +134,7 @@ public class SettingController {
         try{
             Optional<Setting> optionalSetting = settingRepository.findById(id);
             if(optionalSetting.isPresent()){
-                settingRepository.delete(optionalSetting.get());
+                settingRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,

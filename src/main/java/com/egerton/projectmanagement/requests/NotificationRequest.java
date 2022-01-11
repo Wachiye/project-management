@@ -21,6 +21,6 @@ public class NotificationRequest {
    @NotNull(message = "Missing field. Notification type is required.")
     private String type;
 
-   @NotNull(message = "Missing field. Staff ID is required.")
-    private long staffId;
+   @NotNull(message = "Missing field. User ID is required.")
+    private long userId;
 }

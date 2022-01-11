@@ -7,9 +7,10 @@ import com.egerton.projectmanagement.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -78,7 +79,7 @@ public class CommentController {
 
     //create comment
     @PostMapping()
-    public ResponseEntity<Object> createComment(@Valid @RequestBody CommentRequest requestData){
+    public ResponseEntity<Object> createComment(@Validated @RequestBody CommentRequest requestData){
         try{
             //find project
             Optional<Project> optionalProject = projectRepository.findById(requestData.getProjectId());
@@ -106,7 +107,7 @@ public class CommentController {
             }
             return ResponseHandler.generateResponse(
                     "Error. Could not post comment. User/ Project not found.",
-                    HttpStatus.OK,
+                    HttpStatus.NOT_FOUND,
                     null
             );
 
@@ -117,7 +118,7 @@ public class CommentController {
 
     //update comment
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateComment(@PathVariable("id") long id, @Valid @RequestBody CommentRequest requestData){
+    public ResponseEntity<Object> updateComment(@PathVariable("id") long id, @Validated @RequestBody CommentRequest requestData){
         try{
             //find comment by id
             Optional<Comment> optionalComment = commentRepository.findById(id);
@@ -158,7 +159,7 @@ public class CommentController {
             //find comment
             Optional<Comment> optionalComment = commentRepository.findById(id);
             if(optionalComment.isPresent()){//comment found
-                commentRepository.delete(optionalComment.get());
+                commentRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,

@@ -1,20 +1,22 @@
 package com.egerton.projectmanagement.controllers;
 
 import com.egerton.projectmanagement.models.*;
-import com.egerton.projectmanagement.repositories.ProjectFileRepository;
 import com.egerton.projectmanagement.repositories.ProjectRepository;
 import com.egerton.projectmanagement.repositories.StudentRepository;
 import com.egerton.projectmanagement.repositories.UserRepository;
 import com.egerton.projectmanagement.requests.StudentRequest;
+import com.egerton.projectmanagement.requests.StudentUpdate;
+import com.egerton.projectmanagement.services.EmailService;
 import com.egerton.projectmanagement.utils.Password;
 import com.egerton.projectmanagement.utils.ResponseHandler;
+import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.*;
 
 @RestController
@@ -30,7 +32,7 @@ public class StudentController {
     private ProjectRepository projectRepository;
 
     @Autowired
-    private ProjectFileRepository fileRepository;
+    private EmailService emailService;
 
     // get all students
     @GetMapping()
@@ -81,7 +83,7 @@ public class StudentController {
 
     //register student
     @PostMapping("/register")
-    public ResponseEntity<Object> createStudent(@Valid @RequestBody StudentRequest requestData){
+    public ResponseEntity<Object> createStudent(@Validated @RequestBody StudentRequest requestData){
         try{
             //check email
             if( userEmailExists( requestData.getEmail())){
@@ -103,11 +105,17 @@ public class StudentController {
 
             UserModel user = new UserModel();
             populateUser( user, requestData);
+
+            //generate verification code
+            String randomCode = RandomString.make(64);
+            user.setActive(false);
+            user.setVerificationCode(randomCode);
             user.setCreatedAt( new Date());
 
             //save user
             UserModel _user = userRepository.save( user);
 
+            emailService.sendVerificationCode( user, requestData.getVerificationURL());
             Student student = new Student();
             student.setUser( _user);
             student.setRegNo( requestData.getRegNo());
@@ -135,8 +143,8 @@ public class StudentController {
     }
 
     //update student
-    @PutMapping(value = "/{id}", consumes = "application/json")
-    public ResponseEntity<Object> updateStudent(@PathVariable("id") long id, HttpServletRequest request){
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> updateStudent(@PathVariable("id") long id, @Validated StudentUpdate requestData){
         try{
             //find student by id
             Optional<Student> optionalStudent = studentRepository.findById(id);
@@ -144,21 +152,17 @@ public class StudentController {
             if(optionalStudent.isPresent()) { //student account found
 
                 Student student = optionalStudent.get();
-                UserModel user = userRepository.findById( student.getUser().get_id()).get();
+                UserModel user = student.getUser();
 
                 //update user details
-                user.setFirstName(request.getParameter("firstName"));
-                user.setLastName( request.getParameter("lastName"));
-                user.setEmail( request.getParameter("email"));
-
-                Enumeration<String> params = request.getParameterNames();
-               while (params.hasMoreElements()){
-                    System.out.println(params);
-                }
+                user.setFirstName(requestData.getFirstName());
+                user.setLastName(requestData.getLastName());
+                user.setEmail(requestData.getEmail());
+                user.setUpdateAt( new Date());
                 userRepository.save(user);
 
                 //save student
-                student.setRegNo( request.getParameter("regNo"));
+                student.setRegNo(requestData.getRegNo());
                 Student _student = studentRepository.save(student);
 
                 return ResponseHandler.generateResponse(
@@ -186,7 +190,7 @@ public class StudentController {
             //find student
             Optional<Student> optionalStudent = studentRepository.findById(id);
             if(optionalStudent.isPresent()){//student found
-                studentRepository.delete(optionalStudent.get());
+                studentRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,
@@ -256,42 +260,6 @@ public class StudentController {
         }
     }
 
-    //get files
-    @GetMapping("/{id}/files")
-    public  ResponseEntity<Object> getFiles(@PathVariable("id") long id){
-        try{
-            //find student
-            Optional<Student> optionalStudent = studentRepository.findById(id);
-            if(optionalStudent.isPresent()){//student found
-                //empty array list of files
-                List<ProjectFile> files = new ArrayList<>();
-                //get files and populate the array list
-                fileRepository.findAllByStudent(optionalStudent.get()).forEach(files::add);
-
-                if(files.isEmpty()){ // no tasks found
-                    return  ResponseHandler.generateResponse(
-                            "No file record was found with project id " + id,
-                            HttpStatus.NOT_FOUND,
-                            null
-                    );
-                }
-
-                return ResponseHandler.generateResponse(
-                        null,
-                        HttpStatus.OK,
-                        files
-                );
-            }
-            //student not found
-            return ResponseHandler.generateResponse(
-                    "Student with id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
-                    null
-            );
-        }catch(Exception exception){
-        return ResponseHandler.generateResponse(exception);
-        }
-    }
     protected boolean userEmailExists( String email){
         Optional<UserModel> userOptional = userRepository.findUserByEmail( email);
         if ( userOptional.isPresent()){

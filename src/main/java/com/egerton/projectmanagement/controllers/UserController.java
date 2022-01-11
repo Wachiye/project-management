@@ -1,7 +1,5 @@
 package com.egerton.projectmanagement.controllers;
 
-import com.egerton.projectmanagement.models.Staff;
-import com.egerton.projectmanagement.models.Student;
 import com.egerton.projectmanagement.models.UserModel;
 import com.egerton.projectmanagement.models.UserRoles;
 import com.egerton.projectmanagement.repositories.UserRepository;
@@ -43,8 +41,8 @@ public class UserController {
                     HttpStatus.OK,
                     users
             );
-        }catch(Exception exception){
-        return ResponseHandler.generateResponse(exception);
+        } catch(Exception exception){
+            return ResponseHandler.generateResponse(exception);
         }
     }
     // get user by email
@@ -100,7 +98,7 @@ public class UserController {
             //find user
             Optional<UserModel> optionalUser = userRepository.findById(id);
             if(optionalUser.isPresent()){//user found
-                userRepository.delete(optionalUser.get());
+                userRepository.deleteById(id);
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,

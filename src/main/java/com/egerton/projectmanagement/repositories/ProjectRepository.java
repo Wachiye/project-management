@@ -1,6 +1,7 @@
 package com.egerton.projectmanagement.repositories;
 
 import com.egerton.projectmanagement.models.*;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
