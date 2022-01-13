@@ -9,6 +9,25 @@
   --nav-color: #f0efeb;
   --text-color:#f6bbd1;
 }
+.loading{
+  width: 200px;
+  height: 120px;
+  position: absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%, -50%);
+  background-color: #000000;
+  color: #FFFFFF;
+  font-size: 2rem;
+  font-weight: bolder;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2999;
+  box-shadow: 0 3px 3px #DEDEDE !important;
+  padding:20px;
+  border-radius: 10px;
+}
 .alert .close{
   position: absolute;
   top: 0;
@@ -84,10 +103,6 @@ html body{
   box-shadow: 0 3px 3px #115704 !important;
 }
 
-btn.loading::after{
-  content: "... wait ...";
-  display: inline;
-}
 .header .nav-link{
   color: var(--nav-color);
 }
@@ -96,8 +111,11 @@ btn.loading::after{
   padding-top: 10px;
   padding-bottom: 10px;
 }
-.help{
-  background: var(--nav-color);
+.help-item, .task-list{
+ display: none;
+}
+.help-item.active, .task-list.active{
+  display: block !important;
 }
 .project{
   background: var(--nav-color);
@@ -110,8 +128,23 @@ btn.loading::after{
   border: 1px solid #DEDEDE;
 }
 
-.project-card{
+.custom-card.finished{
   border-left: 2px solid #54f338;
+}
+.custom-card.in-progress{
+  border-left: 2px solid #f5e907;
+}
+.custom-card.waiting{
+  border-left: 2px solid #484b48;
+}
+.custom-card.accepted{
+  border-left: 2px solid #9238f3;
+}
+.custom-card.rejected{
+  border-left: 2px solid #ef0c0c;
+}
+.custom-card.border-top{
+  border-top: 2px solid #a0f191 !important;
 }
 .admin-wrapper{
   width: 100%;
@@ -148,7 +181,7 @@ btn.loading::after{
   top: 61px;
   right: -257px;
   width: 257px;
-  height: cal(100vh-61px);
+  height: calc(100vh-61px);
   background-color: #FFFFFF;
   color: #343460;
   font-size: 1.15rem;
@@ -196,6 +229,7 @@ btn.loading::after{
       "icon title"
       "icon text";
   border-top: 1px solid #343460;
+  text-decoration: none;
 }
 .update .icon{
   grid-area: icon;

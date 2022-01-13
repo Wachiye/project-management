@@ -1,8 +1,89 @@
 import React, { Component } from "react";
-import { Link, Redirect} from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import Alert from "../components/Alert/Alert";
 
 import AuthService from "../services/AuthService";
+import isLoading from "../utils/LoadingUtil";
+
+const LoginDiv = ({ handleChange, loginFun, setPwdFun }) => {
+  return (
+    <>
+      <div className="mb-3">
+        <label htmlFor="email" className="form-label">
+          Email
+        </label>
+        <input
+          type="email"
+          className="form-control mb-1"
+          id="email"
+          name="email"
+          placeholder="Enter your Email"
+          onChange={(evt) => handleChange(evt)}
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="password" className="form-label">
+          Password
+        </label>
+        <input
+          type="password"
+          className="form-control"
+          id="password"
+          name="password"
+          placeholder="Enter Password"
+          onChange={(evt) => handleChange(evt)}
+        />
+      </div>
+      <div className="row">
+        <div className="col">
+          <button className="btn btn-success btn-sm" onClick={() => loginFun()}>
+            Login
+          </button>
+        </div>
+        <div className="col">
+          <button className="card-link btn btn-sm btn-outline-secondary" onClick={() => setPwdFun()}>
+            Forgot Password?
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+const PwdDiv = ({ handleChange, resetPasswordFun, setPwdFun }) => {
+  return (
+    <>
+      <div className="mb-3">
+        <label htmlFor="email" className="form-label">
+          Email
+        </label>
+        <input
+          type="email"
+          className="form-control mb-1"
+          id="email"
+          name="email"
+          placeholder="Enter your Email"
+          onChange={(evt) => handleChange(evt)}
+        />
+      </div>
+      <div className="row">
+        <div className="col">
+          <button
+            className="btn btn-success btn-sm"
+            onClick={() => resetPasswordFun()}
+          >
+            Reset Password
+          </button>
+        </div>
+        <div className="col">
+          <button className="card-link btn btn-sm btn-outline-secondary" onClick={() => setPwdFun()}>
+            Login
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
 
 class LoginPage extends Component {
   constructor(props) {
@@ -13,12 +94,15 @@ class LoginPage extends Component {
       password: "",
       alert: {},
       hasAlert: false,
+      pwd: false,
     };
 
     this.setAlert = this.setAlert.bind(this);
     this.removeAlert = this.removeAlert.bind(this);
     this.login = this.login.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.setPwd = this.setPwd.bind(this);
+    this.resetPassword = this.resetPassword.bind(this);
   }
 
   handleChange(evt) {
@@ -41,11 +125,19 @@ class LoginPage extends Component {
       hasAlert: false,
     });
   }
+
+  setPwd() {
+    this.setState({
+      pwd: !this.state.pwd,
+    });
+  }
+
   async login() {
-    let { email, password, role } = this.state;
+    isLoading(true);
+    let { email, password } = this.state;
     let data = {
       email: email,
-      password: password
+      password: password,
     };
     let response = await AuthService.login(data);
     console.log({ response });
@@ -56,9 +148,36 @@ class LoginPage extends Component {
       AuthService.setToken(response.data.data);
       this.props.history.push("/dashboard");
     }
+    isLoading(false);
   }
+
+  async resetPassword() {
+    let { email } = this.state;
+    if (!email) {
+      this.setAlert({
+        title: "Missing Field.",
+        message: "Email is required",
+        type: "danger",
+      });
+    } else {
+      isLoading(true);
+      await AuthService.pwd(email).then((response) => {
+        if (response.error) {
+          this.setAlert(response.error);
+        } else {
+          this.setAlert({
+            title: "Server Response",
+            message: response.data?.message,
+            type: "success",
+          });
+        }
+      });
+      isLoading(false);
+    }
+  }
+
   render() {
-    let { alert, hasAlert } = this.state;
+    let { alert, hasAlert, pwd } = this.state;
     let token = AuthService.getToken();
 
     if (token) {
@@ -71,51 +190,25 @@ class LoginPage extends Component {
               <div className="col-md-6 m-auto">
                 <div className="card bg-light border-success">
                   <div className="card-header bg-success text-light d-flex flex-row justify-content-center align-items-center">
-                    <h6 className="text align-content-center">Member Login</h6>
+                    <h6 className="text align-content-center">{pwd ? 'Reset Password' :'Member Login' }</h6>
                   </div>
                   <div className="card-body">
-                    {hasAlert && <Alert alert={alert} onClick={this.removeAlert}/>}
-                    <div className="mb-3">
-                      <label htmlFor="email" className="form-label">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        className="form-control mb-1"
-                        id="email"
-                        name="email"
-                        placeholder="Enter your Email"
-                        onChange={this.handleChange}
+                    {hasAlert && (
+                      <Alert alert={alert} onClick={this.removeAlert} />
+                    )}
+                    {pwd ? (
+                      <PwdDiv
+                        handleChange={this.handleChange}
+                        resetPasswordFun={this.resetPassword}
+                        setPwdFun={this.setPwd}
                       />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="password" className="form-label">
-                        Password
-                      </label>
-                      <input
-                        type="password"
-                        className="form-control"
-                        id="password"
-                        name="password"
-                        placeholder="Enter Password"
-                        onChange={this.handleChange}
+                    ) : (
+                      <LoginDiv
+                        handleChange={this.handleChange}
+                        loginFun={this.login}
+                        setPwdFun={this.setPwd}
                       />
-                    </div>
-                    <div className="row">
-                      <div className="col">
-                        <button
-                          className="btn btn-success"
-                          onClick={this.login}
-                        >
-                          Login
-                        </button>
-                      </div>
-                      <div className="col">
-                        <Link to="/pwd" className="card-link">
-                          Forgot Password
-                        </Link>
-                      </div>
-                    </div>
+                    )}
                     <hr className="" />
                     <div className="container-fluid">
                       <p className="">

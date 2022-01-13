@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "http://localhost:8080/apams/api/v1/";
+const baseURL = "http://localhost:8080/api/v1/";
 const token = JSON.parse(localStorage.getItem("_apams"))?.token;
 
 const Http = axios.create({

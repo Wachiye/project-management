@@ -1,187 +1,111 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import UserService from "../services/UserService";
+import StudentService from "../services/StudentService";
+import StaffService from "../services/StaffService";
+import ProjectService from "../services/ProjectService";
+import AuthService from "../services/AuthService";
+import DashboardHeader from "../components/Header/DashboardHeader";
+import StudentDashboard from "../components/Dashboard/StudentDashboard";
+import EvaluatorDashboard from "../components/Dashboard/EvaluatorDashboard";
+import SupervisorDashboard from "../components/Dashboard/SupervisorDashboard";
+import isLoading from "../utils/LoadingUtil";
 
 class Dashboard extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      users:[],
+      students:[],
+      student:[],
+      evaluator:[],
+      staff:[],
+      projects:[]
+    }
+
+    this.getAllUsers = this.getAllUsers.bind(this);
+    this.getAllStudents = this.getAllStudents.bind(this);
+    this.getAllStaff = this.getAllStaff.bind(this);
+    this.getAllProjects = this.getAllProjects.bind(this);
+  }
+
+  async getAllUsers(){
+    await UserService.getAll().then( res => {
+      if(res.error){
+        return false;
+      } else {
+        this.setState({
+          users: res.data.data
+        });
+      }
+    });
+  }
+  async getAllStudents(){
+    await StudentService.getAll().then( res => {
+      if(res.error){
+        return false;
+      } else {
+        this.setState({
+          students: res.data.data
+        });
+        let student = res.data.data.filter( std => (
+            std.user?.email === AuthService.getUserEmail()
+        ))[0];
+
+        this.setState({
+          student : student
+        });
+      }
+    });
+  }
+
+  async getAllStaff(){
+    await StaffService.getAll().then( res => {
+      if(res.error){
+        return false;
+      } else {
+
+        let evaluator = res.data.data.filter( s => (
+            s.user?.email === AuthService.getUserEmail() && s.user?.role === "EVALUATOR"
+        ))[0] || null;
+
+        this.setState({
+          staff: res.data.data,
+          evaluator: evaluator
+        });
+      }
+    });
+  }
+  async getAllProjects(){
+    await ProjectService.getAll().then( res => {
+      if(res.error){
+        return false;
+      } else {
+        this.setState({
+          projects: res.data.data
+        });
+      }
+    });
+  }
+
+  async componentDidMount(){
+    isLoading(true);
+    await this.getAllUsers();
+    await this.getAllStudents();
+    await this.getAllStaff();
+    await this.getAllProjects();
+    isLoading(false);
+  }
+
   render() {
+    let {users, projects, students, staff, student} = this.state;
     return (
       <div className="admin-main">
         <div className="container-fluid p-1">
-          <div className="row">
-            <div className="col-12">
-              <div className="welcome">
-                <div className="message float-left">
-                  <h3 className="text-dark">Hi, Welcome back,</h3>
-                  <p className="lead">Your analytics dashboard</p>
-                </div>
-                <div className="cta float-right">
-                  <Link to="/reports" className="cta-btn primary">
-                    View Reports
-                  </Link>
-                </div>
-                <div className="clearfix"></div>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-12">
-              <div className="updates mb-2">
-                <div className="card">
-                  <div className="card-body">
-                    <h5 className="card-title">Quick Updates</h5>
-                    <div className="card-text">
-                      <div className="row">
-                        <div className="col-6 col-md-4 col-xl-2">
-                          <div className="update">
-                            <div className="icon d-flex justify-content-center align-items-center">
-                              <img src="" alt="" width="35" height="35" />
-                            </div>
-                            <h6 className="title">All Projects</h6>
-                            <p className="text">354</p>
-                          </div>
-                        </div>
-                        <div className="col-6 col-md-4 col-xl-2">
-                          <div className="update">
-                            <div className="icon d-flex justify-content-center align-items-center">
-                              <img src="" alt="" width="35" height="35" />
-                            </div>
-                            <h6 className="title">My Projects</h6>
-                            <p className="text">4</p>
-                          </div>
-                        </div>
-                        <div className="col-6 col-md-4  col-xl-2">
-                          <div className="update">
-                            <div className="icon d-flex justify-content-center align-items-center">
-                              <img src="" alt="" width="35" height="35" />
-                            </div>
-                            <h6 className="title">Milestones</h6>
-                            <p className="text">14</p>
-                          </div>
-                        </div>
-                        <div className="col-6 col-md-4 col-xl-2">
-                          <div className="update">
-                            <div className="icon d-flex justify-content-center align-items-center">
-                              <img src="" alt="" width="35" height="35" />
-                            </div>
-                            <h6 className="title">Project Files</h6>
-                            <p className="text">4</p>
-                          </div>
-                        </div>
-
-                        <div className="col-6 col-md-4 col-xl-2">
-                          <div className="update">
-                            <div className="icon d-flex justify-content-center align-items-center">
-                              <img src="" alt="" width="35" height="35" />
-                            </div>
-                            <h6 className="title">All Tasks</h6>
-                            <p className="text">4</p>
-                          </div>
-                        </div>
-                        <div className="col-6 col-md-4 col-xl-2">
-                          <div className="update">
-                            <div className="icon d-flex justify-content-center align-items-center">
-                              <img src="" alt="" width="35" height="35" />
-                            </div>
-                            <h6 className="title">Overdue Tasks</h6>
-                            <p className="text">4</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-12 my-2">
-              <div className="quick-reports">
-                <div className="time-spend">
-                  <h6 className="title">Time spend on project</h6>
-                  <div className="progress" style={{ height: "30px" }}>
-                    <div
-                      className="progress-bar progress-bar-striped"
-                      style={{ width: "70%" }}
-                    >
-                      70%
-                    </div>
-                  </div>
-                  <h6 className="title">Time Available</h6>
-                  <p className="lead">233 Days</p>
-                </div>
-                <div className="pending-tasks">
-                  <h6 className="title">Pending Tasks</h6>
-                  <p className="lead">8</p>
-                </div>
-                <div className="finished-tasks">
-                  <h6 className="title">Finished Tasks</h6>
-                  <p className="lead">2</p>
-                </div>
-                <div className="finished-milestones">
-                  <h6 className="title">Finished Milestones</h6>
-                  <p className="lead">3</p>
-                </div>
-                <div className="project-report">
-                  <div className="card border-info h-100">
-                    <div className="card-header bg-info">
-                      <h6>Project Report</h6>
-                    </div>
-                    <div className="card-body">
-                      <ul className="list-unstyled">
-                        <li className="">
-                          Start Date:
-                          <span className="pull-right">{'values'}</span>
-                        </li>
-                        <li className="">
-                          End Date:
-                          <span className="pull-right">{'values'}</span>
-                        </li>
-                        <li className="">
-                          Project Status:
-                          <span className="pull-right">{'values'}</span>
-                        </li>
-
-                        <li className="">
-                          All Milestones:
-                          <span className="pull-right">{'values'}</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-12">
-              <div className="card">
-                <div className="card-header">
-                  <h5>Recent Tasks</h5>
-                </div>
-                <div className="card-body">
-                  <table className="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>Task ID</th>
-                        <th>Task Name</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>2334</td>
-                        <td>Create Login page</td>
-                        <td>12-09-2021</td>
-                        <td>12-10-2021</td>
-                        <td>Pending</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardHeader />
+          {AuthService.getUserRole() === 'STUDENT' && <StudentDashboard student={student} projects={projects} />}
+          {AuthService.getUserRole() === 'EVALUATOR' && <EvaluatorDashboard users={users} students={students} projects={projects} staff={staff} />}
+          {AuthService.getUserRole() === 'SUPERVISOR' && <SupervisorDashboard projects={projects} staff={staff} /> }
         </div>
       </div>
     );

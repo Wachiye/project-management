@@ -3,6 +3,8 @@ import TaskService from "../services/TaskService";
 import Alert from "../components/Alert/Alert";
 import {Link} from "react-router-dom";
 import MilestoneService from "../services/MilestoneService";
+import {shortDate} from "../utils/DateFormat";
+import isLoading from "../utils/LoadingUtil";
 
 class NewTask extends Component {
     constructor(props) {
@@ -13,12 +15,13 @@ class NewTask extends Component {
             description:"",
             startDate:"",
             endDate:"",
-            milestoneId:this.props.match.params.milestoneId,
+            milestoneId: this.props.milestoneId || this.props.match.params.milestoneId,
             milestoneName:"",
-            projectName:"",
+            project:{},
             milestone:{},
             alert:{},
             hasAlert:false,
+            isModal: this.props.isModal || false,
         };
 
         this.setAlert = this.setAlert.bind(this);
@@ -59,12 +62,13 @@ class NewTask extends Component {
             this.setState({
                 milestone : response.data?.data,
                 milestoneName: response.data?.data?.name,
-                projectName: response.data?.data?.project?.name
+                project: response.data?.data?.project
             });
         }
     }
 
     async createTask(){
+        isLoading(true);
         let { name, description, startDate, endDate, milestoneId} = this.state;
         let data = {
             name: name,
@@ -74,6 +78,7 @@ class NewTask extends Component {
             milestoneId: milestoneId
         }
 
+        console.log({data});
         let response = await TaskService.save(data);
 
         if(response.error){
@@ -86,42 +91,49 @@ class NewTask extends Component {
                 type:"success"
             });
         }
+        isLoading(false);
     }
 
     async componentDidMount(){
-        let _id = this.props.match.params.milestoneId;
+        isLoading(true);
+        let _id = this.props.milestoneId || this.props.match.params.milestoneId;
         this.setState({
             milestoneId:_id
         });
         await this.getMilestone();
+        isLoading(false);
     }
 
     render(){
-        let {hasAlert, alert, milestone, projectName, milestoneName} = this.state;
+        let {hasAlert, alert, milestone, project, milestoneName, isModal} = this.state;
         return(
             <div className="admin-main">
                 <div className="container">
                     <div className="row">
-                        <div className="col-12 mb-2">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <Link to={`/project-tasks/${milestone?._id}`} className="btn btn-sm btn-outline-secondary">All Tasks</Link>
-                                <h3>CREATE NEW PROJECT TASK</h3>
-                                <Link to={`/project-milestones/${milestone.project?._id}`} className="btn btn-sm btn-primary">Milestones</Link>
-                            </div>
-                        </div>
-                        <div className="col-md-8 m-auto">
-                            <div className="card bg-light border-success">
-                                <div className="card-header">
-                                    <h4 className="text-muted">Project: {projectName}</h4>
-                                    <h6 className="text-muted">Milestone: {milestoneName}</h6>
+                        {!isModal && (
+                            <div className="col-12 mb-2">
+                                <div className="d-flex justify-content-between align-items-center">
+                                <Link to={`/projects/${project._id}/milestones/${milestone._id}`} id="btnTasks" name="btnTasks" className="btn btn-outline-secondary btn-lg">All Tasks</Link>
+                                    <h3>CREATE NEW PROJECT TASK</h3>
+                                    <Link to={`/projects/${project?._id}/milestones`} className="btn btn-sm btn-primary">Milestones</Link>
                                 </div>
+                            </div>
+                        )}
+                        <div className={isModal ? "col-12" : "col-md-8 m-auto"}>
+                            <div className="card bg-light border-success">
+                                {!isModal && (
+                                    <div className="card-header">
+                                        <h4 className="text-muted">Project: {project?.name || '--'}</h4>
+                                        <h6 className="text-muted">Milestone: {milestoneName}</h6>
+                                    </div>
+                                )}
                                 <div className="card-body">
                                     <div className="container">
                                         <div className="row">
                                             <div className="col-12">
                                                 {hasAlert && <Alert alert={alert} onClick={this.removeAlert}/>}
                                             </div>
-                                            <div className="col-md-6 mb-2">
+                                            <div className={isModal ? "col-12 mb-2" :"col-md-6 mb-2"}>
                                                 <h3 className="text-success mb-2">Basic Details</h3>
 
                                                 <div className="form-group">
@@ -143,21 +155,25 @@ class NewTask extends Component {
                                                     ></textarea>
                                                 </div>
                                             </div>
-                                            <div className="col-md-6 mb-2">
+                                            <div className={isModal ? "col-12 mb-2" :"col-md-6 mb-2"}>
                                                 <h3 className="text-success mb-2">Other Details</h3>
                                                 <div className="form-group">
                                                     <label htmlFor="startDate" className="form-label">Start Date</label>
-                                                    <input type="date" className="form-control" id="startDate" name="startDate" onChange={this.handleChange}/>
+                                                    <input type="date" className="form-control" id="startDate" name='startDate'
+                                                           min={shortDate(milestone?.startDate)}  max={shortDate(milestone?.endDate)}
+                                                           onChange={this.handleChange}/>
                                                 </div>
                                                 <div className="form-group">
                                                     <label htmlFor="endDate" className="form-label">End Date</label>
-                                                    <input type="date" className="form-control" id="endDate" name="endDate" onChange={this.handleChange}/>
+                                                    <input type="date" className="form-control" id="endDate" name='endDate'
+                                                           min={shortDate(milestone?.startDate)}  max={shortDate(milestone?.endDate)}
+                                                           onChange={this.handleChange}/>
                                                 </div>
                                             </div>
                                             <div className="col-12 my-2">
                                                 <div className="d-flex justify-content-between align-items-center">
-                                                    <button type="button" id="btnTask" name="btnTask" className="btn btn-success btn-lg" onClick={this.createTask}>Submit Task</button>
-                                                    <Link to={`/project-tasks/${milestone?._id}`} id="btnTasks" name="btnTasks" className="btn btn-outline-secondary btn-lg">All Tasks</Link>
+                                                    <button type="button" id="btnTask" name="btnTask" className="btn btn-success btn-lg" onClick={this.createTask}>Create Task</button>
+                                                    <Link to={`/projects/${project._id}/milestones/${milestone._id}`} id="btnTasks" name="btnTasks" className="btn btn-outline-secondary btn-lg">All Tasks</Link>
                                                 </div>
                                             </div>
                                         </div>

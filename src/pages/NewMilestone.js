@@ -3,6 +3,9 @@ import MilestoneService from "../services/MilestoneService";
 import Alert from "../components/Alert/Alert";
 import StudentService from "../services/StudentService";
 import AuthService from "../services/AuthService";
+import {shortDate} from "../utils/DateFormat";
+import isLoading from "../utils/LoadingUtil";
+
 class NewMilestone extends Component {
     constructor(props) {
         super(props);
@@ -11,7 +14,7 @@ class NewMilestone extends Component {
             name: "",
             startDate:"",
             endDate:"",
-            projectId:"",
+            projectId: this.props.projectId || "",
             projects: [],
             
             currentIndex:0,
@@ -21,6 +24,7 @@ class NewMilestone extends Component {
             
             alert:{},
             hasAlert:false,
+            isModal: this.props.isModal || false,
         };
 
         this.setAlert = this.setAlert.bind(this);
@@ -75,6 +79,7 @@ class NewMilestone extends Component {
         });
     }
     async createMilestone(){
+        isLoading(true);
         let { name, startDate, endDate, currentProject} = this.state;
         let data = {
             name: name,
@@ -94,33 +99,39 @@ class NewMilestone extends Component {
                 type:"success"
             });
         }
+        isLoading(false);
     }
     
     async componentDidMount() {
+        isLoading(true);
         await this.getStudent();
         this.setState({
             projects: this.state.student?.projects,
+            currentProject: this.state.student?.projects[0] || {}
         });
+        isLoading(false);
     }
     
     render(){
-        let {hasAlert, alert, projects, currentProject} = this.state;
+        let {hasAlert, alert, projects, currentProject, projectId, isModal} = this.state;
         return(
             <div className="admin-main">
                 <div className="container">
                     <div className="row">
-                        <div className="col-md-8 m-auto">
+                        <div className={isModal ? "col-12" :"col-md-8 m-auto"}>
                             <div className="card bg-light border-info">
-                                <div className="card-header bg-info d-flex flex-row justify-content-center align-items-center ">
-                                    <h6 className="text align-content-center">
-                                        CREATE NEW MILESTONE
-                                    </h6>
-                                </div>
+                                {!isModal && (
+                                    <div className="card-header bg-info d-flex flex-row justify-content-center align-items-center ">
+                                        <h6 className="text align-content-center">
+                                            CREATE NEW MILESTONE
+                                        </h6>
+                                    </div>
+                                )}
                                 <div className="card-body">
                                     {hasAlert && <Alert alert={alert} onClick={this.removeAlert}/>}
                                     <div className="form-group">
                                         <label htmlFor="projectId" className="form-label">Select Project</label>
-                                        <select name="currentProject" id="currentProject" className="form-control" onChange={this.setIndexAndProject}>
+                                        <select name="currentProject" id="currentProject" className="form-control" onChange={this.setIndexAndProject} defaultValue={projectId}>
                                             {projects && projects.map( (project, index) => (
                                                 <option value={`${index}`} key={project._id}>{project.name}</option>
                                             ))}
@@ -129,24 +140,26 @@ class NewMilestone extends Component {
                                     <div className="form-group">
                                         <label htmlFor="name" className="form-label">Milestone Name</label>
                                         <input type="text" className="form-control" id="name" name='name' onChange={this.handleChange}/>
+                                        
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor="startDate" className="form-label">Start Date</label>
                                         <input type="date" className="form-control" id="startDate" name='startDate'
-                                               min={currentProject?.startDate}  max={currentProject?.endDate}
+                                               min={shortDate(currentProject?.startDate)}  max={shortDate(currentProject?.endDate)}
                                                onChange={this.handleChange}/>
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor="endDate" className="form-label">End Date</label>
-                                        <input type="date" className="form-control" id="endDate" name='endDate' onChange={this.handleChange}/>
+                                        <input type="date" className="form-control" id="endDate" name='endDate'
+                                               min={shortDate(currentProject?.startDate)}  max={shortDate(currentProject?.endDate)}
+                                               onChange={this.handleChange}/>
                                     </div>
                                     {/*<div className="form-group">*/}
                                     {/*    <label htmlFor="status" className="form-label">Select Status</label>*/}
                                     {/*    <select name="status" id="status" className="form-control" onChange={this.handleChange}>*/}
-                                    {/*        <option value="1">Status</option>*/}
-                                    {/*        <option value="2">Status 2</option>*/}
-                                    {/*        <option value="3">Status 3</option>*/}
-                                    {/*        <option value="4">Status 4</option>*/}
+                                    {/*        <option value="PENDING">Pending</option>*/}
+                                    {/*        <option value="IN_PROGRESS">In Progress</option>*/}
+                                    {/*        <option value="FINISHED">Finished</option>*/}
                                     {/*    </select>*/}
                                     {/*</div>*/}
                                     <div className="my-2">

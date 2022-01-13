@@ -6,6 +6,7 @@ import {Link} from "react-router-dom";
 import Alert from "../components/Alert/Alert";
 import RegistrationForm from "../components/RegistrationForm";
 import DateFormat from "../utils/DateFormat";
+import isLoading from "../utils/LoadingUtil";
 
 const Text = ({role, profileData}) =>{
     if(role === 'STUDENT') {
@@ -110,6 +111,7 @@ class Profile extends Component{
         }
     }
     async updateProfile(){
+        isLoading(true);
           let{ firstName, lastName, email, regNo, staffId, profileData, userRole} = this.state;
           let data = {
               firstName: firstName,
@@ -119,8 +121,8 @@ class Profile extends Component{
               staffId: staffId
           }
 
-          await this.doUpdate(profileData._id, userRole, data);
-
+        await this.doUpdate(profileData._id, userRole, data);
+        isLoading(false);
     }
     async doUpdate(_id, role, data){
         let response = null;
@@ -142,9 +144,12 @@ class Profile extends Component{
                 profileData: response.data.data
             });
         }
+
+        await this.getProfileData();
     }
 
     async changePassword() {
+        isLoading(true);
         let{  profileData, oldPassword, password, confirmPassword} = this.state;
         let data = {
             oldPassword: oldPassword,
@@ -172,10 +177,13 @@ class Profile extends Component{
                 });
             }
         }
+        isLoading(false);
     }
 
     async componentDidMount(){
-          await this.getProfileData();
+        isLoading(true);
+        await this.getProfileData();
+        isLoading(false);
     }
 
     render() {
@@ -210,7 +218,7 @@ class Profile extends Component{
                                      </p>
                                      <p className="card-text">
                                          <i className="fa fa-calendar"></i>
-                                         <span className="mx-1">Joined: {DateFormat(profileData?.user?.createdAt).toString()}</span>
+                                         <span className="mx-1">Joined: {DateFormat(profileData?.user?.createdAt).toDateString()}</span>
                                      </p>
                                      <Text role={userRole} profileData={profileData} />
                                      {/*<div style={{position:"absolute", left:"50%", bottom:"-30px", transform:"translate(-50%,-50%)"}}>*/}

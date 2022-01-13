@@ -27,7 +27,11 @@ class ProjectService{
     }
     //change project status
     async setStatus(projectId, status){
-        return await HttpService.doPut(`/projects/${projectId}/${status}`, null);
+        return await HttpService.doPut(`/projects/${projectId}/status/${status}`, null);
+    }
+    // assign supervisor
+    async setSupervisor(projectId, supervisorId) {
+        return await HttpService.doPut(`/projects/${projectId}/supervisor/${supervisorId}`, null);
     }
     //get project milestones
     async getMilestones(projectId){
@@ -49,6 +53,7 @@ class ProjectService{
     async deleteAll(){
         return await HttpService.doDelete(`/projects/`);
     }
+
 
 }
 

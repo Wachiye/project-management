@@ -61,4 +61,4 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
     );
   }
 };
-export { PublicRoute, PrivateRoute };
+export { PublicRoute, PrivateRoute, PublicLayout, PrivateLayout };

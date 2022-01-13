@@ -23,7 +23,7 @@ class MilestoneService {
     }
     //change milestone status
     async setStatus(milestoneId, status){
-        return await HttpService.doPut(`/milestones/${milestoneId}/${status}`, null);
+        return await HttpService.doPut(`/milestones/${milestoneId}/status/${status}`, null);
     }
     //get tasks
     async getTasks(milestoneId){

@@ -3,6 +3,44 @@ import { Link } from "react-router-dom";
 import Alert from "../components/Alert/Alert";
 import MilestoneService from "../services/MilestoneService";
 import TaskList from "../components/TaskList";
+import {shortDate} from "../utils/DateFormat";
+import isLoading from "../utils/LoadingUtil";
+
+const Milestone = ({milestone}) => {
+    return (
+        <div className="mb-2 p-2">
+            <table className="table">
+                <thead>
+                <tr>
+                    <th colSpan="2">Milestone Details</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th>Name</th>
+                    <td>{milestone.name}</td>
+                </tr>
+                <tr>
+                    <th>Created On</th>
+                    <td>{ shortDate(milestone.createdAt)}</td>
+                </tr>
+                <tr>
+                    <th>Expected Start Date</th>
+                    <td>{ shortDate(milestone.startDate)}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>{milestone.status}</td>
+                </tr>
+                <tr>
+                    <th>Project</th>
+                    <td>{milestone?.project?.name}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    );
+}
 
 class ViewMilestone extends Component {
     constructor(props) {
@@ -17,6 +55,7 @@ class ViewMilestone extends Component {
 
         this.setAlert = this.setAlert.bind(this);
         this.removeAlert = this.removeAlert.bind(this);
+        this.getMilestone = this.getMilestone.bind(this);
     }
 
     setAlert(alert) {
@@ -32,8 +71,7 @@ class ViewMilestone extends Component {
             hasAlert: false,
         });
     }
-
-    async componentDidMount() {
+    async getMilestone(){
         let milestoneId = this.props.match.params.milestoneId;
         let response = await MilestoneService.getOneById(milestoneId);
 
@@ -45,6 +83,12 @@ class ViewMilestone extends Component {
             });
         }
     }
+    async componentDidMount() {
+        isLoading(true);
+        await this.getMilestone();
+        isLoading(false);
+    }
+    
     render() {
         let { milestone, hasAlert, alert } = this.state;
         return (
@@ -52,7 +96,7 @@ class ViewMilestone extends Component {
                 <div className="container-fluid p-1">
                     <div className="row">
                         <div className="d-flex justify-content-between align-items-center">
-                            <Link to={`/project-milestones/${milestone?.project?._id}`} className="btn btn-sm btn-outline-secondary">All Milestones</Link>
+                            <Link to={`/projects/${milestone?.project?._id}/milestones`} className="btn btn-sm btn-outline-secondary">All Milestones</Link>
                             <div className="card bg-transparent border-0">
                                 <div className="card-body">
                                     <h4 className="card-title">{`Project: ${milestone?.project?.name}`}</h4>
@@ -61,49 +105,15 @@ class ViewMilestone extends Component {
                             </div>
                             <Link to={`/new-task/${milestone?._id}`} className="btn btn-sm btn-primary">New Task</Link>
                         </div>
-                        {hasAlert && <Alert alert={alert} />}
+                        {hasAlert && <Alert alert={alert} onClick={this.removeAlert}/>}
                         <div className="col-md-12">
                             <div className="card border-0">
                                 <div className="card-body">
-                                    <table className="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Start Date</th>
-                                                <th>End Date</th>
-                                                <th>Status</th>
-                                                <th>Started On</th>
-                                                <th>Finished On</th> 
-                                                <th>Tasks</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td>{milestone?._id || '--'}</td>
-                                            <td>{milestone?.startDate || '--'}</td>
-                                            <td>{milestone?.endDate || '--'}</td>
-                                            <td>{milestone?.status || '--'}</td>
-                                            <td>{milestone?.startedOn || '--'}</td>
-                                            <td>{milestone?.finishedOn || '--'}</td>
-                                            <td>{milestone?.tasks?.length || '0'}</td>
-                                            <td className="text-center">
-                                                <ul className="list-inline">
-                                                    <li className="list-inline-item">
-                                                        <Link className="btn btn-primary btn-sm" to={`/edit-task/${milestone}`}>
-                                                            <i className="fa fa-edit"></i>
-                                                        </Link>
-                                                    </li>
-                                                    <li className="list-inline-item">
-                                                        <button className="btn btn-danger btn-sm" type={"button"} >
-                                                            <i className="fa fa-trash"></i>
-                                                        </button>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
+                                    <div className="row">
+                                        <div className="col-md-6">
+                                            <Milestone milestone={milestone} />
+                                        </div>
+                                    </div>
                                     <div className="milestone-tasks">
                                         <h5 className="card-title">Milestone Tasks</h5>
                                         {milestone.tasks && <TaskList tasks={milestone.tasks} /> }

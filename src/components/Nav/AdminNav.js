@@ -28,8 +28,8 @@ const EvaluatorNav = () => {
   return (
     <>
       <li className="nav-item">
-        <Link className="nav-link" to="/supervisors">
-          Supervisors
+        <Link className="nav-link" to="/staff">
+          Staff
         </Link>
       </li>
       <li className="nav-item">
@@ -42,6 +42,12 @@ const EvaluatorNav = () => {
           Projects
         </Link>
       </li>
+      <li className="nav-item">
+        <Link className="nav-link" to="/approve-projects">
+          Approve Projects
+        </Link>
+      </li>
+        <SettingsNav/>
     </>
   );
 };
@@ -55,13 +61,14 @@ const SupervisorNav = () => {
         </Link>
       </li>
       <li className="nav-item">
-        <Link className="nav-link" to="/projects/supervisor/">
+        <Link className="nav-link" to="/my-projects">
           My Projects
         </Link>
       </li>
     </>
   );
 };
+
 const AdminNav = () => {
   return (
     <>
@@ -80,10 +87,19 @@ const AdminNav = () => {
           Projects
         </Link>
       </li>
+        <SettingsNav/>
     </>
   );
 };
-
+const SettingsNav =() => {
+    return(
+        <li className="nav-item">
+            <Link className="nav-link" to="/settings">
+                Settings
+            </Link>
+        </li>
+    );
+}
 const GetNav = ({ role }) => {
   if (role === "STUDENT") return <StudentNav />;
   else if (role === "EVALUATOR") return <EvaluatorNav />;
@@ -115,13 +131,23 @@ const Nav = (props) => {
         </li>
         {props.role && <GetNav role={props.role} />}
         <li className="nav-item">
-          <Link className="nav-link" to="/">
+          <Link className="nav-link" to="/notifications">
             Notifications
           </Link>
         </li>
+          <li className="nav-item">
+              <Link className="nav-link" to="/reports">
+                  Reports
+              </Link>
+          </li>
         <li className="nav-item">
           <Link className="nav-link" to="/profile">
             Profile
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/help">
+              Help
           </Link>
         </li>
         <li className="nav-item">

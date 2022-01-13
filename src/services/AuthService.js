@@ -11,7 +11,7 @@ class AuthService {
     }
     //request password change
     async pwd(email){
-        return await HttpService.doPost(`/auth/pwd`, {
+        return await HttpService.doPost(`/auth/pwd?email=${email}`, {
             "email":email
         });
     }

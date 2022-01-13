@@ -1,4 +1,31 @@
-const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, regNo, staffId}) => {
+const UserRoles = ({roles, changeHandler, disabled}) => {
+    if(!roles){
+        roles = ['STUDENT'];
+    }
+
+    return(
+        <div className="form-group">
+            <label htmlFor="role" className="form-label">
+                Role
+            </label>
+            <select
+                className="form-control"
+                id="role"
+                name="role"
+                onChange={(evt)=>changeHandler(evt)}
+                required
+                disabled={disabled}
+                defaultValue={'STUDENT'}
+            >
+                {roles.map( (role, index) => (
+                    <option value={role} key={index}>{role}</option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, regNo, staffId, roles}) => {
     return(
         <>
             {names && (
@@ -12,7 +39,7 @@ const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, reg
                         className="form-control mb-1"
                         id="firstName"
                         name="firstName"
-                        placeholder="Enter your First Name"
+                        placeholder="Enter your First Name "
                         required
                         disabled={disabled}
                         onChange={(evt)=>changeHandler(evt)}
@@ -72,7 +99,7 @@ const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, reg
             {staffId && (
                 <div className="form-group">
                     <label htmlFor="staffId" className="form-label">
-                        Registration Number
+                       Staff ID
                     </label>
                     <input
                         type="text"
@@ -118,27 +145,7 @@ const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, reg
                     </div>
                 </>
             )}
-            {role && (
-                <div className="form-group">
-                    <label htmlFor="role" className="form-label">
-                        Role
-                    </label>
-                    <select
-                        className="form-control"
-                        id="role"
-                        name="role"
-                        onChange={(evt)=>changeHandler(evt)}
-                        required
-                        disabled={disabled}
-                        defaultValue="SELECT"
-                    >
-                        <option value="SELECT">Select Role</option>
-                        <option value="STUDENT" >Student</option>
-                        <option value="SUPERVISOR">Supervisor</option>
-                        <option value="EVALUATOR">Evaluator</option>
-                    </select>
-                </div>
-            )}
+            {role && <UserRoles roles={roles} changeHandler={changeHandler} disabled={disabled} />}
 
         </>
     )

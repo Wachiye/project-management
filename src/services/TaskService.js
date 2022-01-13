@@ -23,7 +23,7 @@ class TaskService{
     }
     //change task status
     async setStatus(taskId, status){
-        return await HttpService.doPut(`/tasks/${taskId}/${status}`, null);
+        return await HttpService.doPut(`/tasks/${taskId}/status/${status}`, null);
     }
 
     //delete task

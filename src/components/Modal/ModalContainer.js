@@ -1,22 +1,20 @@
-const ModalContainer = ({children, id, title}) => {
+import Modal from "react-bootstrap/Modal";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const ModalContainer = ({children, active, setActive, id, title, size="sm"}) => {
     return(
-        <div className="modal" id={id}>
-            <div className="modal-dialog">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h4 className="modal-title">{title}</h4>
-                        <button type="button" className="close" data-dismiss="modal">&times;</button>
-                    </div>
-                    <div className="modal-body">
-                        {children}
-                    </div>
-                    <div className="modal-footer">
-                        <button type="button" className="btn btn-danger" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <Modal show={active} id={id} size={size}>
+            <Modal.Header>
+                <h4 className="modal-title">{title}</h4>
+                <button type="button" className="btn btn-danger" data-dismiss="modal" onClick={()=>setActive(false)}>&times;</button>
+            </Modal.Header>
+            <Modal.Body>
+                {children}
+            </Modal.Body>
+            {/*<Modal.Footer>*/}
+            {/*    <button type="button" className="btn btn-danger" data-dismiss="modal" onClick={()=>setActive(false)}>Close</button>*/}
+            {/*</Modal.Footer>*/}
+        </Modal>
     );
 }
-
 export default ModalContainer;

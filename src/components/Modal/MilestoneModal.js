@@ -3,9 +3,7 @@ import ModalContainer from "./ModalContainer";
 
 const MilestoneModal = ({id, title}) => {
     return(
-        <ModalContainer id={id} title={title}>
-            <NewMilestone />
-        </ModalContainer>
+        <ModalContainer id={id} title={title} component={NewMilestone} />
     );
 }
 
