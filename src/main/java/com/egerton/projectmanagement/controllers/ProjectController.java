@@ -477,7 +477,7 @@ public class ProjectController {
             //find project
             Optional<Project> optionalProject = projectRepository.findById(id);
             if(optionalProject.isPresent()){//project found
-                projectRepository.deleteById(id);
+                projectRepository.delete(optionalProject.get());
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,

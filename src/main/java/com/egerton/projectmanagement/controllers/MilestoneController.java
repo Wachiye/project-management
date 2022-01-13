@@ -84,6 +84,15 @@ public class MilestoneController {
             Optional<Project> optionalProject = projectRepository.findById(requestData.getProjectId());
 
             if(optionalProject.isPresent()){
+                //project must have been approved
+                Project _project = optionalProject.get();
+                if(_project.getStatus().compareTo( Status.WAITING_APPROVAL)  == 0 || _project.getStatus().compareTo( Status.REJECTED) == 0){
+                    return ResponseHandler.generateResponse(
+                            "Unable to create milestone. Project not approved or has been rejected",
+                            HttpStatus.OK,
+                            null
+                    );
+                }
                 //create milestone object
                 Milestone milestone = new Milestone();
                 //populate milestone object with data

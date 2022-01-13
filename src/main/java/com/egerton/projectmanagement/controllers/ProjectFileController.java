@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
 import java.util.ArrayList;
@@ -125,6 +124,14 @@ public class ProjectFileController {
                 if(optionalProject.isPresent() && optionalStudent.isPresent()){ // project and student found
 
                     Project project = optionalProject.get();
+                    //project must have been approved
+                    if(project.getStatus().compareTo( Status.WAITING_APPROVAL)  == 0 || project.getStatus().compareTo( Status.REJECTED) == 0){
+                        return ResponseHandler.generateResponse(
+                                "Unable to Upload file. Project not approved or has been rejected",
+                                HttpStatus.OK,
+                                null
+                        );
+                    }
 
                     Student student = optionalStudent.get();
 

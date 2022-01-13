@@ -259,7 +259,7 @@ public class TaskController {
     }
 
     private  boolean isFinalTaskInProject( Task task, Project project){
-        Set<Task> tasks = null ;
+        List<Task> tasks = new ArrayList<>() ;
         project.getMilestones().forEach( milestone -> {
             if(milestone.getTasks() != null)
                 tasks.addAll(milestone.getTasks());
@@ -278,7 +278,7 @@ public class TaskController {
             //find task
             Optional<Task> optionalTask = taskRepository.findById(id);
             if(optionalTask.isPresent()){//task found
-                taskRepository.deleteById(id);
+                taskRepository.delete(optionalTask.get());
                 return  ResponseHandler.generateResponse(
                         null,
                         HttpStatus.NO_CONTENT,
