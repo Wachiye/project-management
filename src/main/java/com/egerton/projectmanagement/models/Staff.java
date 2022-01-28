@@ -18,7 +18,7 @@ public class Staff {
     @GeneratedValue( strategy = GenerationType.AUTO)
     private long _id;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name="user_id", referencedColumnName = "_id")
     private UserModel user;
 

@@ -33,7 +33,7 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     private NotificationTypes type;
 
-    @ManyToOne( targetEntity = UserModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne( targetEntity = UserModel.class, fetch = FetchType.EAGER)
     @JoinColumn( name = "posted_by", referencedColumnName = "_id")
     private UserModel postedBy;
 

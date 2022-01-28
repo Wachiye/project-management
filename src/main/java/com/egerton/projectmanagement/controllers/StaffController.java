@@ -210,7 +210,7 @@ public class StaffController {
             Staff _staff = staffRepository.save(staff);
 
             return ResponseHandler.generateResponse(
-                    "Staff registration was successful.",
+                    "Staff registration was successful. Please check email for account verification link",
                     HttpStatus.OK,
                     _staff
             );
@@ -221,7 +221,7 @@ public class StaffController {
 
     //update staff
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateStaff(@PathVariable("id") long id, @RequestBody StaffUpdate requestData){
+    public ResponseEntity<Object> updateStaff(@PathVariable("id") long id, @Validated @RequestBody StaffUpdate requestData){
         try{
             //find staff by id
             Optional<Staff> optionalStaff = staffRepository.findById(id);

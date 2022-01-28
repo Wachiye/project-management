@@ -124,7 +124,7 @@ public class StudentController {
             Student _student = studentRepository.save(student);
 
             return ResponseHandler.generateResponse(
-                    "Student registration was successful.",
+                    "Student registration was successful. Please check email for account verification link",
                     HttpStatus.OK,
                     _student
             );
@@ -143,8 +143,8 @@ public class StudentController {
     }
 
     //update student
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updateStudent(@PathVariable("id") long id, @Validated StudentUpdate requestData){
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<Object> updateStudent(@PathVariable("id") long id, @Validated @RequestBody StudentUpdate requestData){
         try{
             //find student by id
             Optional<Student> optionalStudent = studentRepository.findById(id);

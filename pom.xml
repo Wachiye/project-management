@@ -12,9 +12,13 @@
     <artifactId>projectmanagement</artifactId>
     <version>0.0.1</version>
     <name>projectmanagement</name>
-    <description>projectmanagement</description>
+    <description>Academic Project Approval and Management System Server REST API</description>
+    <packaging>jar</packaging>
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
+        <start-class>com.egerton.projectmanagement.ProjectmanagementApplication</start-class>
     </properties>
     <dependencies>
         <dependency>

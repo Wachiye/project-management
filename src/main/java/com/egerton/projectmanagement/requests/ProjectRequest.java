@@ -25,10 +25,8 @@ public class ProjectRequest {
     @NotBlank(message = "Missing field. Project languages is required.")
     private String languages;
 
-    @NotNull(message = "Missing field. Project Start Date is required.")
     private Date startDate;
 
-    @NotNull(message = "Missing field. Project End Date is required.")
     private Date endDate;
 
     @NotNull(message = "Missing field. Student ID is required.")

@@ -1,19 +1,15 @@
 package com.egerton.projectmanagement.models;
 
 import com.egerton.projectmanagement.utils.DateUtil;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;;
 import lombok.*;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "milestones")
@@ -50,14 +46,14 @@ public class Milestone {
     @LastModifiedDate
     private Date updateAt;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name="project_id", referencedColumnName = "_id")
     @JsonIgnoreProperties("milestones")
     private Project project;
 
-    @OneToMany( mappedBy = "milestone", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany( mappedBy = "milestone", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("milestone")
-    private Set<Task> tasks;
+    private List<Task> tasks;
 
     @Transient
     private long milestoneDays;
@@ -66,7 +62,7 @@ public class Milestone {
     private long daysLeft;
 
     public long getMilestoneDays() {
-        return DateUtil.getDaysBetween( endDate, startDate);
+        return DateUtil.getDaysBetween( startDate, endDate);
     }
 
     public long getDaysLeft() {

@@ -135,13 +135,13 @@ public class ProjectFileController {
 
                     Student student = optionalStudent.get();
 
-                    String fileType = FileType.valueOf( requestData.getFileType()).toString();
+                    FileType fileType = FileType.valueOf( requestData.getFileType());
 
                     String[] fileParts = file.getOriginalFilename().split(".\\.");
                     String fileExtension = fileParts[ fileParts.length -1];
 
                     //upload file
-                    String filename = fileType + "-" + student.getRegNo().replace("/","_") + "-" + student.getUser().getLastName() + "-" + project.get_id() + "." + fileExtension;
+                    String filename = fileType.toString() + "-" + student.getRegNo().replace("/","_") + "-" + student.getUser().getLastName() + "-" + project.get_id() + "." + fileExtension;
                     String fileURL = fileService.upload(requestData.getFile(), filename);
 
                     if(fileURL != null){
@@ -154,13 +154,14 @@ public class ProjectFileController {
                         projectFile.setFileURL(fileURL);
                         projectFile.setStatus(Status.PENDING);
                         projectFile.setCreatedAt( new Date());
+                        projectFile.setFileType( fileType);
                         projectFile.setUpdateAt( new Date());
 
                         //save projectFile
                         ProjectFile _projectFile = fileRepository.save(projectFile);
 
                         //send supervisor email
-                        sendSupervisorEmail(student, projectFile, fileType);
+                        sendSupervisorEmail(student, projectFile, fileType.toString());
 
                         return ResponseHandler.generateResponse(
                                 "Project file created successfully.",
@@ -265,19 +266,24 @@ public class ProjectFileController {
                 projectFile.setStatus(_status);
                 projectFile.setUpdateAt(new Date());
 
+                String statusToSend = "";
+                switch (_status){
+                    case ACCEPTED:
+                        projectFile.setAcceptedDate( new Date());
+                        statusToSend = "Accepted";
+                        break;
+                    case REJECTED:
+                        statusToSend = "Rejected";
+                        break;
+                    default: break;
+                }
+
                 //save projectFile
                 ProjectFile _projectFile = fileRepository.save(projectFile);
                 //send email to student
                 Student student = projectFile.getProject().getStudent();
-                switch (_status){
-                    case ACCEPTED:
-                        sendStatusEmail( student, projectFile, "Accepted");
-                        break;
-                    case REJECTED:
-                        sendStatusEmail( student, projectFile, "Rejected");
-                        break;
-                    default: break;
-                }
+                sendStatusEmail( student, projectFile, statusToSend);
+
                 return ResponseHandler.generateResponse(
                         "Project File status changed successful.",
                         HttpStatus.OK,

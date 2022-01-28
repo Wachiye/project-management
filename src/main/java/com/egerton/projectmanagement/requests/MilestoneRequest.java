@@ -16,10 +16,8 @@ public class MilestoneRequest {
     @NotBlank(message = "Missing field. Milestone name is required.")
     private String name;
 
-    @NotNull(message = "Missing field. Milestone Start Date is required.")
     private Date startDate;
 
-    @NotNull(message = "Missing field. Milestone End Date is required.")
     private Date endDate;
 
     @NotNull(message = "Missing field. Project ID is required.")

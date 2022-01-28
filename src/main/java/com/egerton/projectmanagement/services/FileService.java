@@ -2,6 +2,7 @@ package com.egerton.projectmanagement.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,12 @@ import java.util.Map;
 @Service
 public class FileService{
 
-    private String API_KEY = "369116188552444";
-    private String API_SECRET = "WUlqQrV4i9Hu09W8sE4OmXZxI54";
-    private String CLOUD_NAME = "apams";
+    @Value(value="cloudinary.api_key")
+    private String API_KEY;
+    @Value(value="cloudinary.api_secret")
+    private String API_SECRET;
+    @Value(value="cloudinary.cloud_name")
+    private String CLOUD_NAME;
 
     private Cloudinary cloudinary() {
         Cloudinary cloudinary = null;

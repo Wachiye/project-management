@@ -36,12 +36,12 @@ public class Comment {
     @LastModifiedDate
     private Date updateAt;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn( name = "project_id", referencedColumnName = "_id")
     @JsonIgnoreProperties("comments")
     private Project project;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn( name = "user_id", referencedColumnName = "_id")
     private UserModel user;
 }

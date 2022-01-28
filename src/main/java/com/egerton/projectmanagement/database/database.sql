@@ -93,6 +93,7 @@ CREATE TABLE `project_files` (
   `_id` bigint NOT NULL,
   `created_at` datetime NOT NULL,
   `description` varchar(255) NOT NULL,
+  `file_type` varchar (255) NOT NULL,
   `file_url` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `project_id` bigint NOT NULL,

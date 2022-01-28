@@ -50,7 +50,7 @@ public class AuthController {
     private EmailService emailService;
 
     @PostMapping(value = "/register", consumes ="application/json" )
-    public ResponseEntity<Object> register(@Validated @RequestBody RegisterRequest requestData, HttpServletRequest request) {
+    public ResponseEntity<Object> register(@Validated @RequestBody RegisterRequest requestData) {
         try{
             String email = requestData.getEmail();
            Optional<UserModel> userOptional = userRepository.findUserByEmail( email);
@@ -65,16 +65,17 @@ public class AuthController {
            UserModel userModel = new UserModel();
            populateUser(userModel, requestData);
 
+            //generate verification code
+            String randomCode = RandomString.make(64);
+            userModel.setVerificationCode( randomCode);
+
            //save user
             UserModel _userModel = userRepository.save(userModel);
 
-            //site url
-            String siteURL = request.getRequestURL().toString();
-
-            emailService.sendVerificationCode( userModel, siteURL);
+            emailService.sendVerificationCode( userModel, requestData.getVerificationURL());
 
             return ResponseHandler.generateResponse(
-                    "User registration was successful.",
+                    "User registration was successful. Please check email for account verification link",
                     HttpStatus.OK,
                     _userModel
             );
@@ -99,7 +100,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody LoginRequest requestData, HttpServletRequest request){
+    public ResponseEntity<Object> login(@RequestBody LoginRequest requestData){
         try {
             //logout all active sessions
             Optional<Login> _login = loginRepository.findLoginByEmail( requestData.getEmail());
@@ -124,14 +125,6 @@ public class AuthController {
 
                 return  saveLogin(login);
             }
-            String verificationCode = null;
-            if(user.getVerificationCode() == null){
-                verificationCode = RandomString.make(64);
-                user.setVerificationCode( verificationCode);
-                userRepository.save( user);
-            }
-            // TODO Obtain the client URL
-            emailService.sendVerificationCode( user, request.getRequestURL().toString());
 
             return ResponseHandler.generateResponse(
                     "Login failed. Your account is not verified. Please check email to verify and try again.",
@@ -285,7 +278,7 @@ public class AuthController {
 
     }
 
-    @GetMapping("/verify/{code}")
+    @PostMapping("/verify/{code}")
     public ResponseEntity<Object> verifyAccount( @PathVariable("code") String code){
         try{
             Optional<UserModel> user = userRepository.findUserModelByVerificationCode(code);
@@ -294,7 +287,7 @@ public class AuthController {
                 _user.setActive( true);
                 userRepository.save( _user);
                 return ResponseHandler.generateResponse(
-                        "Hi " + _user.getFullName() + ". Your account has been verificated. Use Your email and password to login",
+                        "Hi " + _user.getFullName() + ". Your account has been verified. Use Your email and password to login",
                         HttpStatus.OK,
                         null
                 );

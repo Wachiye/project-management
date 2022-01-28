@@ -153,8 +153,15 @@ public class TaskController {
     protected void populateTask( Task task, TaskRequest requestData){
         task.setName( requestData.getName());
         task.setDescription( requestData.getDescription());
-        task.setStartDate( requestData.getStartDate());
-        task.setEndDate( requestData.getEndDate());
+        if( requestData.getStartDate() != null)
+            task.setStartDate( requestData.getStartDate());
+        else
+            task.setStartDate( null);
+
+        if( requestData.getEndDate() != null)
+            task.setEndDate( requestData.getEndDate());
+        else
+            task.setEndDate( null);
     }
 
     // get all task by status
@@ -248,7 +255,7 @@ public class TaskController {
     }
 
     private boolean isFinalTaskInMilestone( Task task, Milestone milestone){
-        Set<Task> tasks = milestone.getTasks();
+        List<Task> tasks = milestone.getTasks();
 
         for (Task t: tasks) {
             if(t.get_id() != task.get_id() && task.getStatus().compareTo( Status.FINISHED) != 0 )

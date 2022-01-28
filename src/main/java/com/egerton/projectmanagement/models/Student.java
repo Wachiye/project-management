@@ -20,7 +20,7 @@ public class Student {
     @GeneratedValue( strategy = GenerationType.AUTO)
     private long _id;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name="user_id", referencedColumnName = "_id")
     private UserModel user;
 
@@ -28,7 +28,7 @@ public class Student {
     @NotBlank(message = "Missing field. Reg No is required.")
     private String regNo;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("student")
     private Set<Project> projects;
 }

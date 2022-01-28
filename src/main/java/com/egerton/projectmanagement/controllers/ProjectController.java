@@ -196,10 +196,17 @@ public class ProjectController {
         project.setDescription(requestData.getDescription());
         project.setCategory(ProjectCategory.valueOf(requestData.getCategory()));
         project.setLanguages( requestData.getLanguages());
-        project.setStartDate( requestData.getStartDate());
-        project.setEndDate( requestData.getEndDate());
-    }
 
+        if( requestData.getStartDate() != null)
+            project.setStartDate( requestData.getStartDate());
+        else
+            project.setStartDate( null);
+
+        if( requestData.getEndDate() != null)
+            project.setEndDate( requestData.getEndDate());
+        else
+            project.setEndDate( null);
+    }
 
     //get project milestones
     @GetMapping("/{id}/milestones")
@@ -346,6 +353,8 @@ public class ProjectController {
                 project.setStatus( _status);
 
                 switch (_status){
+                    case ACCEPTED:
+                        project.setAcceptedDate( new Date());
                     case IN_PROGRESS:
                         project.setStartDate( new Date());
                         project.setEndDate( null);
@@ -389,7 +398,7 @@ public class ProjectController {
         }
     }
     private  boolean hasPendingMilestones(Project project){
-        Set<Milestone> milestones = project.getMilestones();
+        List<Milestone> milestones = project.getMilestones();
         for (Milestone milestone: milestones) {
             if(milestone.getStatus().compareTo( Status.FINISHED) != 0 )
                 return true;

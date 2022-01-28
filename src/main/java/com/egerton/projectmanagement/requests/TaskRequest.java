@@ -19,10 +19,8 @@ public class TaskRequest {
     @NotBlank(message = "Missing field. Task description is required.")
     private String description;
 
-    @NotNull(message = "Missing field. Task Start Date is required.")
     private Date startDate;
 
-    @NotNull(message = "Missing field. Task End Date is required.")
     private Date endDate;
 
     @NotNull(message = "Missing field. Milestone ID is required.")

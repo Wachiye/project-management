@@ -34,6 +34,10 @@ public class ProjectFile {
     @NotBlank(message = "Missing field. File URL description is required.")
     private String fileURL;
 
+    @Column( name ="file_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private FileType fileType;
+
     @Column( name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -46,7 +50,10 @@ public class ProjectFile {
     @LastModifiedDate
     private Date updateAt;
 
-    @ManyToOne( targetEntity = Project.class, cascade = CascadeType.ALL)
+    @Column( name = "accepted_date")
+    private Date acceptedDate;
+
+    @ManyToOne
     @JoinColumn(name = "project_id")
     @JsonIgnoreProperties("projectFiles")
     private Project project;

@@ -27,4 +27,7 @@ public class RegisterRequest {
 
     @NotNull(message = "Missing field. Role (Student/Staff)")
     private String role;
+
+    @NotBlank( message =  "Missing field. Verification URL is required.")
+    private String verificationURL;
 }

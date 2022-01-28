@@ -50,7 +50,7 @@ public class Task {
     @LastModifiedDate
     private Date updateAt;
 
-    @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "milestone_id", referencedColumnName = "_id")
     @JsonIgnoreProperties("tasks")
     private Milestone milestone;
@@ -62,7 +62,7 @@ public class Task {
     private long daysLeft;
 
     public long getTaskDays() {
-        return DateUtil.getDaysBetween( endDate, startDate);
+        return DateUtil.getDaysBetween( startDate, endDate);
     }
 
     public long getDaysLeft() {

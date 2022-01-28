@@ -157,8 +157,16 @@ public class MilestoneController {
 
     protected void populateMilestone( Milestone milestone, MilestoneRequest requestData){
         milestone.setName( requestData.getName());
-        milestone.setStartDate( requestData.getStartDate());
-        milestone.setEndDate( requestData.getEndDate());
+
+        if( requestData.getStartDate() != null)
+            milestone.setStartDate( requestData.getStartDate());
+        else
+            milestone.setStartDate( null);
+
+        if( requestData.getEndDate() != null)
+            milestone.setEndDate( requestData.getEndDate());
+        else
+            milestone.setEndDate( null);
     }
 
     //get milestone milestones
@@ -287,7 +295,7 @@ public class MilestoneController {
         }
     }
     private  boolean hasPendingTasks(Milestone milestone){
-        Set<Task> tasks = milestone.getTasks();
+        List<Task> tasks = milestone.getTasks();
         for (Task t: tasks) {
             if(t.getStatus().compareTo( Status.FINISHED) != 0 )
                return true;
@@ -295,7 +303,7 @@ public class MilestoneController {
         return false;
     }
     private boolean isFinalMilestone( Milestone milestone, Project project){
-        Set<Milestone> milestones = project.getMilestones();
+        List<Milestone> milestones = project.getMilestones();
         for (Milestone m: milestones) {
             if(m.get_id() != milestone.get_id() && milestone.getStatus().compareTo( Status.FINISHED) != 0 )
                 return  false;
@@ -306,24 +314,15 @@ public class MilestoneController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteMilestone(@PathVariable("id") long id){
         try{
-            //find milestone
-            Optional<Milestone> optionalMilestone = milestoneRepository.findById(id);
-            if(optionalMilestone.isPresent()){//milestone found
-                milestoneRepository.deleteById(id);
-                return  ResponseHandler.generateResponse(
-                        null,
-                        HttpStatus.NO_CONTENT,
-                        null
-                );
-            }
-            //milestone not found
-            return ResponseHandler.generateResponse(
-                    "Milestone with id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            milestoneRepository.deleteById(id);
+            return  ResponseHandler.generateResponse(
+                    null,
+                    HttpStatus.NO_CONTENT,
                     null
             );
+
         }catch(Exception exception){
-        return ResponseHandler.generateResponse(exception);
+            return ResponseHandler.generateResponse(exception);
         }
     }
 

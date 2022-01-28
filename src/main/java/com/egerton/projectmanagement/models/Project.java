@@ -10,7 +10,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "projects")
@@ -48,11 +48,16 @@ public class Project {
     @Column( name = "end_date")
     private Date endDate;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="student_id", referencedColumnName = "_id")
+    @JsonIgnoreProperties("projects")
+    private Student student;
+
+    @ManyToOne
     @JoinColumn(name="evaluator_id", referencedColumnName = "_id")
     private Staff evaluator;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name="supervisor_id", referencedColumnName = "_id")
     private Staff supervisor;
 
@@ -68,22 +73,20 @@ public class Project {
     @LastModifiedDate
     private Date updateAt;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="student_id", referencedColumnName = "_id")
-    @JsonIgnoreProperties("projects")
-    private Student student;
-
-    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("project")
-    private Set<Milestone> milestones;
+    private List<Milestone> milestones;
 
-    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("project")
-    private Set<Comment> comments;
+    private List<Comment> comments;
 
-    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany( mappedBy = "project", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("project")
-    private Set<ProjectFile> projectFiles;
+    private List<ProjectFile> projectFiles;
+
+    @Column( name = "accepted_date")
+    private Date acceptedDate;
 
     @Transient
     private long projectDays;
