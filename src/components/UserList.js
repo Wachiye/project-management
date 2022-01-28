@@ -2,27 +2,45 @@ import DateFormat from "../utils/DateFormat";
 import React, {useState} from "react";
 import ModalContainer from "./Modal/ModalContainer";
 import EditUser from "./EditUser";
+import ContactForm from "./ContactForm";
 
 const DeleteRow = ({canDelete, deleteFn, user, userRole}) =>{
     const [active, setActive] = useState(false);
+    const [show, setShow] = useState(false);
 
     return(
         <td className="text-center">
             <ul className="list-inline">
                 <li className="list-inline-item">
-                    <button className="btn btn-primary mx-2" onClick={()=>setActive(true)}>
-                        <i className="fa fa-edit"></i>
+                    <button className="btn btn-sm btn-success" onClick={()=>setShow(true)}>
+                        <i className="fa fa-envelope"></i>
                     </button>
-                    <ModalContainer active={active} setActive={setActive} size={"md"} title="Update User Details" id={user._id}>
-                      <EditUser user={user}  stdRegNo={user?.regNo || null} staffNo={user?.staffId || null} />
+                    <ModalContainer active={show} setActive={setShow} size={"md"} title={`Contact ${user?.fullName || user?.user?.fullName}  `} id={user._id}>
+                        <ContactForm 
+                            user={user}
+                            inMessage={true}
+                            receiverName={user?.fullName|| user?.user?.fullName}
+                            receiverEmail={user?.email || user?.user?.email}
+                            />
                     </ModalContainer>
                 </li>
+
                 {canDelete && (
+                    <>
+                    <li className="list-inline-item">
+                        <button className="btn btn-sm btn-primary" onClick={()=>setActive(true)}>
+                            <i className="fa fa-edit"></i>
+                        </button>
+                        <ModalContainer active={active} setActive={setActive} size={"md"} title="Update User Details" id={user._id}>
+                            <EditUser user={user}  stdRegNo={user?.regNo || null} staffNo={user?.staffId || null} />
+                        </ModalContainer>
+                    </li>
                     <li className="list-inline-item">
                         <button className="btn btn-outline-danger btn-sm" type="button" onClick={()=>deleteFn(user?._id, userRole)}>
                             <i className="fa fa-trash"></i>
                         </button>
                     </li>
+                    </>
                 )}
             </ul>
         </td>
@@ -93,7 +111,7 @@ const UserList = ({users, canDelete, userRole, deleteFn}) => {
                     {userRole === "ALL" && <UserRow user={user} /> }
                     {userRole === "STUDENT" && <StudentRow user={user} /> }
                     {userRole === "STAFF" && <StaffRow user={user} /> }
-                    <DeleteRow user={user} canDelete={canDelete} deleteFn={deleteFn} userRole={userRole} />
+                    <DeleteRow user={user} canDelete={canDelete} deleteFn={deleteFn} userRole={userRole}  />
                 </tr>
             ))}
             </tbody>

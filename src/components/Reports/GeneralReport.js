@@ -10,6 +10,36 @@ const GeneralReport = ({projects, users}) => {
     let inProgress = projects?.filter( p => p.status === 'IN_PROGRESS');
     let waitingApproval = projects?.filter( p => p.status === 'WAITING_APPROVAL');
     let overdueProjects = projects?.filter( p => p.status === 'IN_PROGRESS');
+
+    let projectsByCategory = () => {
+        let categories = [
+            {
+                name: 'Android',
+                projects : projects?.filter( p => p.category === 'ANDROID')
+            },
+            {
+                name: 'Desktop',
+                projects : projects?.filter( p => p.category === 'DESKTOP')
+            },
+            {
+                name: 'Web Based',
+                projects : projects?.filter( p => p.category === 'WEB_BASED')
+            },
+            {
+                name: 'Networking',
+                projects : projects?.filter( p => p.category === 'NETWORKING')
+            },
+            {
+                name: 'SECURITY',
+                projects : projects?.filter( p => p.category === 'SECURITY')
+            },
+            {
+                name: 'OTHER',
+                projects : projects?.filter( p => p.category === 'OTHER')
+            },
+        ]
+        return categories;
+    }
     return(
         <div className="container">
             <div className="row">
@@ -74,22 +104,16 @@ const GeneralReport = ({projects, users}) => {
                             <table className="table">
                                 <thead>
                                 <tr>
-                                    <th>Web Based</th>
-                                    <th>Desktop</th>
-                                    <th>Android</th>
-                                    <th>Networking</th>
-                                    <th>Artificial Intelligence</th>
-                                    <th>Database</th>
+                                    {projectsByCategory() && projectsByCategory().map(cat => (
+                                        <th>{cat.name}</th>
+                                    ))}
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>[web]</td>
-                                    <td>[desktop]</td>
-                                    <td>[android]</td>
-                                    <td>[networking]</td>
-                                    <td>[ai]</td>
-                                    <td>[database]</td>
+                                    {projectsByCategory() && projectsByCategory().map(cat => (
+                                        <td>{cat.projects.length}</td>
+                                    ))}
                                 </tr>
                                 </tbody>
                             </table>

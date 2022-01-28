@@ -3,6 +3,7 @@ import { Link} from "react-router-dom";
 import Alert from "../components/Alert/Alert";
 import StudentService from "../services/StudentService";
 import StaffService from "../services/StaffService";
+import AuthService from "../services/AuthService";
 import UserList from "../components/UserList";
 import UserService from "../services/UserService";
 import isLoading from "../utils/LoadingUtil";
@@ -28,11 +29,13 @@ class Users extends Component {
         this.getAllStudents = this.getAllStudents.bind(this);
         this.getAllStaff = this.getAllStaff.bind(this);
         this.getAllUsers = this.getAllUsers.bind(this);
+        this.canDeleteUsers = this.canDeleteUsers.bind(this);
         this.deleteUser = this.deleteUser.bind(this);
         this.deleteAllUsers = this.deleteAllUsers.bind(this);
         this.removeFromList = this.removeFromList.bind(this);
 
     }
+
     setAlert(alert) {
         this.setState({
             alert: alert,
@@ -60,8 +63,18 @@ class Users extends Component {
                 users: this.state.staff
             });
         } else if(role === "STUDENT"){
+            let students = this.state.students;
+            let userEmail = AuthService.getUserEmail();
+
+            if( AuthService.getUserRole() === 'SUPERVISOR'){
+                students = students?.filter( std => {
+                  return std.projects?.filter(p => (
+                    p.supervisor?.user?.email === userEmail
+                  ));
+                })
+            }
             this.setState({
-                users: this.state.students
+                users: students
             });
         } else{
             this.setState({
@@ -120,9 +133,8 @@ class Users extends Component {
                 this.setAlert(response.error);
             }else{
                 this.setAlert({
-                    "title":"Server Response",
-                    "message": response.data.message,
-                    "type":"success"
+                    message: response.data.message,
+                    type:"success"
                 })
                 this.removeFromList(role, userId);
             }
@@ -140,6 +152,15 @@ class Users extends Component {
                 staff: this.state.staff.filter(s => s._id !== userId)
             });
         }
+    }
+
+    canDeleteUsers(){
+        let role = AuthService.getUserRole();
+        
+        if(['ADMINISTRATOR','EVALUATOR'].includes(role))
+            return true;
+        else
+            return false;
     }
 
     async deleteAllUsers(role){
@@ -169,11 +190,12 @@ class Users extends Component {
         await this.getAllUsers();
         await this.getAllStudents();
         await this.getAllStaff();
-        this.setUsers( this.state.userRole);
+        this.setUsers( this.props.role || this.state.userRole);
         isLoading(false);
     }
     render(){
        let {users, alert, hasAlert, userRole, canSelect} = this.state;
+       
         return(
             <div className="admin-main">
                 <div className="container-fluid p-1">
@@ -201,15 +223,17 @@ class Users extends Component {
                                         </div>
                                     )}
                                     <div className="card-text pull-right">
-                                        <div className="btn-group">
-                                            <Link className="btn btn-secondary mx-2" to="/new-user">
-                                                <i className="fa fa-plus"></i>
-                                                <span className="mx-1">New User</span>
-                                            </Link>
-                                            <button className="btn btn-danger" onClick={()=>this.deleteAllUsers(userRole)} >
-                                                <i className="fa fa-trash text-light"></i> Delete All
-                                            </button>
-                                        </div>
+                                        {this.canDeleteUsers() && (
+                                            <div className="btn-group">
+                                                <Link className="btn btn-secondary mx-2" to="/new-user">
+                                                    <i className="fa fa-plus"></i>
+                                                    <span className="mx-1">New User</span>
+                                                </Link>
+                                                <button className="btn btn-danger" onClick={()=>this.deleteAllUsers(userRole)} >
+                                                    <i className="fa fa-trash text-light"></i> Delete All
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -218,7 +242,7 @@ class Users extends Component {
                             {hasAlert && <Alert alert={alert} onClick={this.removeAlert()} /> }
                         </div>
                         <div className="col-12">
-                            <UserList userRole={userRole} users={users} canDelete={true} deleteFn={this.deleteUser} />
+                            <UserList userRole={userRole} users={users} canDelete={this.canDeleteUsers()} deleteFn={this.deleteUser} />
                         </div>
                     </div>
                 </div>

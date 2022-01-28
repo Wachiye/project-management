@@ -10,9 +10,11 @@ import ModalContainer from "../components/Modal/ModalContainer";
 import UserService from "../services/UserService";
 import isLoading from "../utils/LoadingUtil";
 import {saveAs} from 'file-saver';
+import NewComment from "../components/NewComment";
 
 const StudentActions =({project, student, changeStatus, deleteProject}) => {
     const [status, setStatus] = useState(null);
+    const [active, setActive] = useState( false);
 
     const statuses = [{
         name: "IN_PROGRESS",
@@ -26,7 +28,10 @@ const StudentActions =({project, student, changeStatus, deleteProject}) => {
         return(
             <>
                 <button className="btn btn-danger" onClick={() => deleteProject()}>Delete</button>
-                <button className="btn btn-outline-secondary mx-1">Comment</button>
+                <button className="btn btn-outline-secondary mx-1" onClick={()=>setActive(true)}>Comment</button>
+                <ModalContainer id="new-comment" title={`Project: ${project?.name}`} active={active} setActive={setActive} size="md">
+                    <NewComment projectId={project?._id} studentId={student?._id} />
+                </ModalContainer>
                 {['ACCEPTED','IN_PROGRESS'].includes(project?.status) && (
                     <div className="input-group my-3">
                         <div className="input-group-prepend">
@@ -160,9 +165,37 @@ class MyProjects extends Component{
             this.setAlert(response.error);
         }
         else{
+            let userRole = AuthService.getUserRole();
+            let userEmail = AuthService.getUserEmail();
+
+            let user = await  this.getUserByEmail( userEmail);
 
             this.setState({
                 allProjects : response.data.data
+            });
+
+            if( userRole === 'EVALUATOR'){
+                this.setState({
+                    projects: this.state.allProjects.filter( p => p.evaluator?.user?.email === userEmail)
+                })
+            } else if( userRole === 'SUPERVISOR'){
+                this.setState({
+                    projects: this.state.allProjects.filter( p => p.supervisor?.user?.email === userEmail)
+                })
+            } else if( userRole === 'STUDENT'){
+                this.setState({
+                    projects: this.state.allProjects.filter( p => p.student?.user?.email === userEmail)
+                });
+            } else {
+                this.setState({
+                    projects: this.state.allProjects
+                })
+            }
+
+            this.setState({
+                projectId: 0,
+                user: user,
+                currentProject: this.state.projects[0]
             });
         }
     }
@@ -214,7 +247,7 @@ class MyProjects extends Component{
                     project: response.data.data
                 });
                 this.setAlert({
-                    title:"Server Response",
+                    
                     message: response.data.message,
                     type:"success"
                 });
@@ -251,41 +284,15 @@ class MyProjects extends Component{
                 type:"success"
             });
         }
+        await this.getAllProjects();
+
         isLoading(false);
     }
 
     async componentDidMount(){
         isLoading(true);
-        let userRole = AuthService.getUserRole();
-        let userEmail = AuthService.getUserEmail();
-
-        let user = await  this.getUserByEmail( userEmail);
 
         await this.getAllProjects();
-
-        if( userRole === 'EVALUATOR'){
-            this.setState({
-                projects: this.state.allProjects.filter( p => p.evaluator?.user?.email === userEmail)
-            })
-        } else if( userRole === 'SUPERVISOR'){
-            this.setState({
-                projects: this.state.allProjects.filter( p => p.supervisor?.user?.email === userEmail)
-            })
-        } else if( userRole === 'STUDENT'){
-            this.setState({
-                projects: this.state.allProjects.filter( p => p.student?.user?.email === userEmail)
-            });
-        } else {
-            this.setState({
-                projects: this.state.allProjects
-            })
-        }
-
-        this.setState({
-            projectId: 0,
-            user: user,
-            currentProject: this.state.projects[0]
-        });
 
         this.loadProject();
 
@@ -309,22 +316,24 @@ class MyProjects extends Component{
                         <div className="col-12 mb-2">
                             <div className="card bg-light shadow">
                                 <div className="card-body">
-                                    <h4 className="text-body">Select Project</h4>
-                                    <div className="btn-group">
-                                        <select name="currentProject" id="currentProject" className="form-control" onChange={this.setProjectId}>
-                                            {projects && projects.map( (project, index) => (
-                                                <option value={`${index}`} key={project._id}>{project.name}</option>
-                                            ))}
-                                        </select>
+                                    <div className="pull-left mb-2">
+                                        <h4 className="text-body">Select Project</h4>
+                                        <div className="btn-group">
+                                            <select name="currentProject" id="currentProject" className="form-control" onChange={this.setProjectId}>
+                                                {projects && projects.map( (project, index) => (
+                                                    <option value={`${index}`} key={project._id}>{project.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div className="pull-right">
+
+                                    <div className="pull-right mb-2">
                                         {  user?.role === 'STUDENT' ? (
                                             <>
                                                 <Link className="btn btn-secondary mx-2" to="/new-milestone/">
-                                                    <i className="fa fa-plus"></i>
                                                     <span className="mx-1">New Milestone</span>
                                                 </Link>
-                                                <button className="btn btn-primary mx-2" onClick={()=>this.setActive(true)}>
+                                                <button className="btn btn-primary mx-1" onClick={()=>this.setActive(true)}>
                                                     <i className="fa fa-edit"></i>
                                                 </button>
                                                 <ModalContainer id="new-project-container" title={`Edit Project: ${currentProject?.name}`} active={active} setActive={this.setActive} size="lg">
@@ -333,9 +342,10 @@ class MyProjects extends Component{
                                             </>
                                         ): <div> </div>}
 
-                                        <button className="btn btn-success mx-2" onClick={() => this.downloadFiles()}>
+                                        <button className="btn btn-success mx-1" onClick={() => this.downloadFiles()}>
                                             <i className="fa fa-download text-light"></i>
                                         </button>
+                                        <Link className="btn btn-secondary mx-1" to={`/projects/${currentProject?._id}/report`}>View Report</Link>
                                         {  user?.role === 'STUDENT' ? (
                                             <button className="btn btn-danger" onClick={this.deleteProject}>
                                                 <i className="fa fa-trash text-light"></i>
@@ -355,14 +365,17 @@ class MyProjects extends Component{
                                     <Link className="nav-link" data-toggle="tab" to={`/projects/${currentProject?._id}/milestones`}>Milestones</Link>
                                 </li>
                                 <li className="nav-item">
-                                    <Link className="nav-link" data-toggle="tab" to={`/projects/${currentProject?._id}/files`}>Files</Link>
+                                    <Link className="nav-link" data-toggle="tab" to={`/projects/${currentProject?._id}/files`}>
+                                        Files
+                                        <span className='badge text-danger'>{currentProject?.projectFiles?.filter(f => f.status === 'PENDING')?.length || ''}</span>
+                                    </Link>
                                 </li>
                                 <li className="nav-item">
                                     <Link className="nav-link" data-toggle="tab" to={`/projects/${currentProject?._id}/comments`}>Comments</Link>
                                 </li>
                             </ul>
                             <div className="tab-content">
-                                <div className="tab-pane container active" id="details">
+                                <div className="tab-pane container-fluid active" id="details">
                                     <div className="row">
                                         <div className="col-md-8 mb-2 py-1">
                                             {currentProject && <Project project={currentProject} changeStatus={this.changeStatus} deleteProject={this.deleteProject} />}

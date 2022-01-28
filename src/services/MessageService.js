@@ -14,7 +14,11 @@ class MessageService{
     async sendMessage(data){
         return await HttpService.doPost(`/messages`, data);
     }
-
+    //save message
+    async sendReply(messageId, data){
+        return await HttpService.doPost(`/messages/${messageId}/reply`, data);
+    }
+    
     //delete message
     async delete(messageId){
         return await HttpService.doDelete(`/messages/${messageId}`);

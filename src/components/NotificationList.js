@@ -13,7 +13,8 @@ const NotificationList = ({notifications, canDelete, deleteFun}) => {
                 <div className="card-footer">
                     <div className="card-text pull-left">
                         <i className="fa fa-user"></i>
-                        <span className="mx-1">{notification?.postedBy?.user?.fullName }</span>
+                        <span className="mx-1">{notification?.postedBy?.fullName }</span>
+                        <small className="text-muted text-italic">({notification?.postedBy?.role })</small>
                     </div>
                     {canDelete && (
                         <div className="pull-right">

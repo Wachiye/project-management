@@ -133,29 +133,37 @@ class LoginPage extends Component {
   }
 
   async login() {
-    isLoading(true);
     let { email, password } = this.state;
+
     let data = {
       email: email,
       password: password,
     };
-    let response = await AuthService.login(data);
-    console.log({ response });
-
-    if (response.error) {
-      this.setAlert(response.error);
+    if (!email || !password) {
+      this.setAlert({
+        message: "Email and Password are required",
+        type: "danger",
+      });
     } else {
-      AuthService.setToken(response.data.data);
-      this.props.history.push("/dashboard");
+      isLoading(true);
+    
+      let response = await AuthService.login(data);
+
+      if (response.error) {
+        this.setAlert(response.error);
+      } else {
+        
+        AuthService.setToken(response.data.data);
+        this.props.history.push("/dashboard");
+      }
+      isLoading(false);
     }
-    isLoading(false);
   }
 
   async resetPassword() {
     let { email } = this.state;
     if (!email) {
-      this.setAlert({
-        title: "Missing Field.",
+      return this.setAlert({
         message: "Email is required",
         type: "danger",
       });
@@ -166,7 +174,6 @@ class LoginPage extends Component {
           this.setAlert(response.error);
         } else {
           this.setAlert({
-            title: "Server Response",
             message: response.data?.message,
             type: "success",
           });

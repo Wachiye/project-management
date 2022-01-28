@@ -8,10 +8,10 @@ import ModalContainer from "../components/Modal/ModalContainer";
 import isLoading from "../utils/LoadingUtil";
 import ContactForm from "../components/ContactForm";
 
-const MessageList = ({messages}) => {
+const MessageList = ({user, messages, refreshFun}) => {
     return(
         messages.map( message => (
-            <MessageCard message={message} key={message?._id} />
+            <MessageCard key={message?._id} user={user} message={message} refreshFun={refreshFun} />
         ))
     );
 }
@@ -73,13 +73,13 @@ class Messages extends Component{
 
     async getUser(){
         let email = AuthService.getUserEmail();
-        let response = await UserService.getAll();
+        let response = await UserService.getOneByEmail(email);
 
         if (response.error) {
             this.setAlert(response.error);
         } else {
             this.setState({
-                messages: response.data?.data || []
+                user: response.data?.data || {}
             });
         }
     }
@@ -93,6 +93,7 @@ class Messages extends Component{
 
     render() {
         let { messages, user, alert, hasAlert, active} = this.state;
+        console.log({messages});
         return(
             <div className="admin-main">
                 <div className="container">
@@ -114,7 +115,7 @@ class Messages extends Component{
                             </ModalContainer>
                         </div>
                         <div className="col-12 mb-2">
-                            {Messages && <MessageList messages={messages} />}
+                            {messages && <MessageList user={user} messages={messages} refreshFun={this.getMessages} />}
                         </div>
                     </div>
                 </div>

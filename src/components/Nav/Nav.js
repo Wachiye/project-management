@@ -5,7 +5,7 @@ const Nav = () => {
         <nav className="navbar navbar-expand-lg" >
             <div className="container">
                 <Link className="navbar-brand" to="/">
-                    <img src="" alt="" width="35" height="35" />
+                    <img src="logo192.png" alt="" width="35" height="35" />
                 </Link>
                 <button className="navbar-toggler text-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
                         aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">

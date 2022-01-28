@@ -3,6 +3,7 @@ import {Link} from "react-router-dom";
 import Alert from "../components/Alert/Alert";
 import MilestoneList from "../components/MilestoneList";
 import ModalContainer from "../components/Modal/ModalContainer";
+import AuthService from "../services/AuthService";
 import ProjectService from "../services/ProjectService";
 import isLoading from "../utils/LoadingUtil";
 import NewMilestone from "./NewMilestone";
@@ -24,6 +25,7 @@ class Milestones extends Component{
         this.removeAlert = this.removeAlert.bind(this);
         this.getMilestones = this.getMilestones.bind(this);
         this.setActive = this.setActive.bind(this);
+        this.isOwner = this.isOwner.bind(this);
     }
 
     setAlert(alert) {
@@ -63,6 +65,16 @@ class Milestones extends Component{
         }
     }
 
+    isOwner (){
+        let email = AuthService.getUserEmail();
+        let project = this.state.milestones[0]?.project || {};
+
+        if(project && email === project?.student?.user?.email)
+            return true;
+        else
+            return false;
+    }
+
     async componentDidMount(){
         isLoading(true);
         let _id = this.props.match.params.projectId;
@@ -83,10 +95,17 @@ class Milestones extends Component{
                             <div className="d-flex justify-content-between align-items-center">
                                 <Link to="/my-projects" className="btn btn-sm btn-outline-secondary">My Projects</Link>
                                 <h3>Project Milestones</h3>
-                                <button className="btn btn-sm btn-primary" onClick={ () => this.setActive(true)}>New Milestone</button>
-                                <ModalContainer title={"Create Project Milestone"} active={active} setActive={this.setActive} size="md">
-                                    <NewMilestone projectId={projectId} isModal={true} />
-                                </ModalContainer>
+                                {this.isOwner() ? (
+                                    <>
+                                        <button className="btn btn-sm btn-primary" onClick={ () => this.setActive(true)}>New Milestone</button>
+                                        <ModalContainer title={"Create Project Milestone"} active={active} setActive={this.setActive} size="md">
+                                            <NewMilestone projectId={projectId} isModal={true} />
+                                        </ModalContainer>
+                                    </>
+                                ): (
+                                    <div></div>
+                                )}
+                                
                             </div>
                         </div>
                         <div className="col-12">
@@ -96,7 +115,7 @@ class Milestones extends Component{
                                 </div>
                                 <div className="card-body">
                                     {hasAlert && <Alert alert={alert} onClick={this.removeAlert}/>}
-                                    {milestones && <MilestoneList milestones={milestones} deleteMilestone={true} /> }
+                                    {milestones && <MilestoneList milestones={milestones} deleteMilestone={this.isOwner()} refreshFun={()=>this.getMilestones()} /> }
                                 </div>
                             </div>
                         </div>

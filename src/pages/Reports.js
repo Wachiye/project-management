@@ -1,30 +1,21 @@
 import React, {Component} from "react";
-import ProjectStatusReport from "../components/Reports/ProjectStatusReport";
 import GeneralReport from "../components/Reports/GeneralReport";
-import FileSubmissionReport from "../components/Reports/FileSubmissionReport";
 import ProjectService from "../services/ProjectService";
 import isLoading from '../utils/LoadingUtil';
+import ProjectReport from "../components/Reports/ProjectReport";
+import AuthService from "../services/AuthService";
 
 const ShowReport = ({report, projects, users}) => {
     if(report === "Project Status"){
-        // let role = AuthService.getUserRole();
-        // if(role === 'STUDENT'){
-        //     let projects = []
-        //     ProjectService.getAll().then(res => {
-        //         projects = res.data.data
-        //     });
+        let role = AuthService.getUserRole();
 
-        //     if(projects){
-        //         projects = projects.filter(p => p.student?.user?.email === AuthService.getUserEmail)
-        //     }
-        //     return <ProjectStatusReport projectList={projects} />;
-        // } else{
-            return <ProjectStatusReport project={projects[0] || null} />;
-        // }
+        if(role !== 'STUDENT') {
+            return <ProjectReport projects={projects} projectId={projects[0]?._id} showProjects={true}/>;
+        }
+        else {
+            return  null;
+        }
     }
-      
-    else if( report === "File Submission")
-        return <FileSubmissionReport />;
     else
         return <GeneralReport projects={projects} users={users} />;
 }
@@ -34,9 +25,10 @@ class Reports extends Component{
         super(props);
 
         this.state = {
-            reports : ["General", "Project Status","File Submission"],
+            reports : ["General", "Project Status"],
             report:1,
             projects:[],
+            project:0,
             users: []
         }
 
@@ -103,13 +95,6 @@ class Reports extends Component{
                                         ))}
                                     </select>
                                 </div>
-                            </div>
-                            <div className="pull-right pt-4" >
-                                <ul className="list-inline">
-                                    <li className="list-inline-item">
-                                        <button className="btn btn-sm btn-primary" >Download</button>
-                                    </li>
-                                </ul>
                             </div>
                         </div>
                     </div>

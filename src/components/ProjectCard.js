@@ -25,9 +25,12 @@ function ProjectCard({project}) {
                         <ProfileCard profileData={project?.student}  userRole={"STUDENT"} />
                     </ModalContainer>
                 </div>
-                <Link to={`/projects/${project?._id}`} className="pull-right btn btn-outline-primary btn-sm">
-                    <i className="fa fa-arrow-circle-o-right"></i>
-                </Link>
+                <div>
+                    <Link to={`/projects/${project?._id}`} className="pull-right btn btn-outline-primary btn-sm">
+                        <i className="fa fa-arrow-circle-o-right"> View </i>
+                    </Link>
+                </div>
+                
             </div>
         </div>
     );

@@ -45,7 +45,6 @@ const EvaluatorDashboard = ({projects, users, students, staff}) => {
             setAlert(response.error);
         } else{
             setAlert({
-                title:"Server Response",
                 message: response.data.message,
                 type:"success"
             });

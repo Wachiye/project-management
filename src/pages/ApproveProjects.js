@@ -11,7 +11,7 @@ const ApproveProjects = () => {
 
   useEffect(() => {
     getPendingProjects();
-  }, [pendingProjects]);
+  }, []);
 
   const removeAlert = () => {
     setAlert(null);
@@ -42,7 +42,7 @@ const ApproveProjects = () => {
         setAlert(response.error);
     } else{
         setAlert({
-            title:"Server Response",
+            
             message: response.data.message,
             type:"success"
         });
@@ -50,7 +50,7 @@ const ApproveProjects = () => {
         await getPendingProjects();
     }
     isLoading(false);
-}
+  }
 
   return (
     <div className="admin-main">

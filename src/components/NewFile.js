@@ -148,7 +148,7 @@ class NewFile extends Component {
                                                 </div>
                                                 <div className="form-group mb-2">
                                                     <label htmlFor="description" className="form-label">Description</label>
-                                                    <RichTextEditor text={project?.description} handleChangeFun={this.setDescription} /> 
+                                                    <RichTextEditor  handleChangeFun={this.setDescription} />
                                                 </div>
                                                 <div className="form-group mb-2">
                                                     <label htmlFor="file" className="form-label">File</label>

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { MyDocViewer, MyFileViewer } from "../components/FileViewer/FileViewer";
+import AuthService from "../services/AuthService";
 import FileService from "../services/FileService";
 import isLoading from "../utils/LoadingUtil";
 
@@ -19,6 +20,7 @@ class ViewProjectFile extends Component {
         this.setAlert = this.setAlert.bind(this);
         this.removeAlert = this.removeAlert.bind(this);
         this.getFile = this.getFile.bind(this);
+        this.isOwner = this.isOwner.bind(this);
         this.deleteFile = this.deleteFile.bind(this);
     }
 
@@ -50,6 +52,15 @@ class ViewProjectFile extends Component {
             });
         }
     }
+    isOwner (){
+        let email = AuthService.getUserEmail();
+        let project = this.state.file.project || {};
+
+        if(project && email === project?.student?.user?.email)
+            return true;
+        else
+            return false;
+    }
 
     async deleteFile( fileId){
         let del = window.confirm("Are your sure you want to delete this file?");
@@ -61,7 +72,6 @@ class ViewProjectFile extends Component {
                 this.setAlert(response.error);
             } else{
                 this.setAlert({
-                    title : 'Operation successful',
                     message: response.data?.message,
                     type:"success"
                 });
@@ -93,7 +103,12 @@ class ViewProjectFile extends Component {
                                         <h6 className="text-muted card-subtitle">{`File Name: ${file?.name}`}</h6>
                                     </div>
                                 </div>
-                                <Link to={`/new-file`} className="btn btn-sm btn-primary">New File</Link>
+                                {AuthService.getUserRole === 'STUDENT' ? (
+                                    <Link to={`/new-file`} className="btn btn-sm btn-primary">New File</Link>
+                                ):(
+                                    <div></div>
+                                )}
+                                
                             </div>
                         </div>
                         <div className="col-12 mb-2">
@@ -102,18 +117,20 @@ class ViewProjectFile extends Component {
                                     <tr>
                                         <th>Description</th>
                                         <th>Status</th>
-                                        <th>Action</th>
+                                        {this.isOwner() && <th>Action</th> }
                                     </tr>
                                 </thead>
                                 <tbody>
                                    <tr>
                                         <td>{file?.description}</td>
                                         <td>{file?.status}</td>
-                                        <td>
-                                            <button type="button" className="btn btn-danger btn-sm" onClick={()=>this.deleteFile(file._id)}>
-                                                < i className="fa fa-trash-o"></i>
-                                            </button>
-                                        </td>
+                                        {this.isOwner() && (
+                                            <td>
+                                                <button type="button" className="btn btn-danger btn-sm" onClick={()=>this.deleteFile(file._id)}>
+                                                    < i className="fa fa-trash-o"></i>
+                                                </button>
+                                            </td>
+                                        )}
                                     </tr>
                                 </tbody>
                             </table>

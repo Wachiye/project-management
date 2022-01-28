@@ -1,21 +1,21 @@
 const StatusIndicator = ({status}) => {
     if(status === 'FINISHED')
-        return <i className="fa fa-check-circle-o text-success"></i>;
+        return <span><i className="fa fa-check-circle-o text-success"></i> Finished</span>;
     else if( status === 'IN_PROGRESS')
-        return <i className="fa fa-check-circle text-warning"></i>;
-    else if(status === 'WAITING_APPROVAL')
-        return <i className="fa fa-clock-o text-secondary"></i>;
+        return <span><i className="fa fa-check-circle text-warning"></i> In Progress</span>;
+    else if(status === 'WAITING_APPROVAL' || status === 'PENDING')
+        return <span><i className="fa fa-clock-o text-secondary"></i> Not Approved</span>;
     else if(status === 'ACCEPTED')
-        return <i className="fa fa-clock text-success"></i>;
+        return <span><i className="fa fa-clock text-success"></i> Approved</span>;
     else
-        return <i className="fa fa-times-rectangle text-danger"></i>;
+        return <span><i className="fa fa-times-rectangle text-danger"></i> Rejected</span>;
 }
 const Status = (status) => {
     if(status === 'FINISHED')
         return "finished";
     else if( status === 'IN_PROGRESS')
         return "in-progress";
-    else if(status === 'WAITING_APPROVAL')
+    else if(status === 'WAITING_APPROVAL' || status === 'PENDING')
         return "waiting";
     else if(status === 'ACCEPTED')
         return "accepted";

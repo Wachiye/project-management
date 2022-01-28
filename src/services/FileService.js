@@ -17,6 +17,10 @@ class FileService{
     async update(fileId, data){
         return await HttpService.doPut(`/files/${fileId}`, data);
     }
+    //change file status
+    async setStatus(fileId, status){
+        return await HttpService.doPut(`/files/${fileId}/status/${status}`, null);
+    }
 
     // get comments
     async getComments(fileId){

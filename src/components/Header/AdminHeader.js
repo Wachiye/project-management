@@ -1,16 +1,21 @@
-import AuthService from "../../services/AuthService";
 import {Link} from "react-router-dom";
+import $ from 'jquery';
 
 const AdminHeader = () => {
-  return (
+    function toggleNav() {
+        $('.admin-nav').toggleClass('active');
+    }
+    return (
     <div className="admin-header shadow" >
         <div className="py-2 d-lg-none">APAMS</div>
       <div className="py-2 d-none d-lg-block">Academic Project Approval and Management System</div>
-      <div className="d-lg-none">
+      <div style={{cursor:"pointer"}} className="d-lg-none admin-nav-toggler" onClick={() => toggleNav()} >
         <i className="fa fa-bars"></i>
       </div>
         <div className="py-2 d-none d-lg-block small">
-            <Link to="/profile" >{AuthService.getUserEmail()}</Link>
+            <Link to="/profile" >
+              <i className="fa fa-2x fa-user-circle text-success"></i>
+            </Link>
         </div>
     </div>
   );

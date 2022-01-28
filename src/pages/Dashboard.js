@@ -30,62 +30,71 @@ class Dashboard extends Component {
   }
 
   async getAllUsers(){
-    await UserService.getAll().then( res => {
-      if(res.error){
-        return false;
-      } else {
-        this.setState({
-          users: res.data.data
-        });
-      }
-    });
+    let res = await UserService.getAll();
+
+    if(res.error){
+      return false;
+    } else {
+      this.setState({
+        users: res.data.data
+      });
+    }
   }
   async getAllStudents(){
-    await StudentService.getAll().then( res => {
-      if(res.error){
-        return false;
-      } else {
-        this.setState({
-          students: res.data.data
-        });
-        let student = res.data.data.filter( std => (
-            std.user?.email === AuthService.getUserEmail()
-        ))[0];
+    let res = await StudentService.getAll();
 
-        this.setState({
-          student : student
-        });
+    if(res.error){
+      return false;
+    } else {
+      let userEmail = AuthService.getUserEmail();
+      let students = res.data.data;
+
+      if( AuthService.getUserRole() === 'SUPERVISOR'){
+        students = students?.filter( std => {
+          return std.projects?.filter(p => (
+            p.supervisor?.user?.email === userEmail
+          ));
+        })
       }
-    });
+
+      let student = res.data.data.filter( std => (
+          std.user?.email === userEmail
+      ))[0];
+
+      this.setState({
+        students: students,
+        student : student
+      });
+    }
   }
 
   async getAllStaff(){
-    await StaffService.getAll().then( res => {
-      if(res.error){
-        return false;
-      } else {
+    let res = await StaffService.getAll();
 
-        let evaluator = res.data.data.filter( s => (
-            s.user?.email === AuthService.getUserEmail() && s.user?.role === "EVALUATOR"
-        ))[0] || null;
+    if(res.error){
+      return false;
+    } else {
 
-        this.setState({
-          staff: res.data.data,
-          evaluator: evaluator
-        });
-      }
-    });
+      let evaluator = res.data.data.filter( s => (
+          s.user?.email === AuthService.getUserEmail() && s.user?.role === "EVALUATOR"
+      ))[0] || null;
+
+      this.setState({
+        staff: res.data.data,
+        evaluator: evaluator
+      });
+    }
   }
   async getAllProjects(){
-    await ProjectService.getAll().then( res => {
-      if(res.error){
-        return false;
-      } else {
-        this.setState({
-          projects: res.data.data
-        });
-      }
-    });
+    let res = await ProjectService.getAll();
+
+    if(res.error){
+      return false;
+    } else {
+      this.setState({
+        projects: res.data.data
+      });
+    }
   }
 
   async componentDidMount(){
@@ -105,7 +114,7 @@ class Dashboard extends Component {
           <DashboardHeader />
           {AuthService.getUserRole() === 'STUDENT' && <StudentDashboard student={student} projects={projects} />}
           {AuthService.getUserRole() === 'EVALUATOR' && <EvaluatorDashboard users={users} students={students} projects={projects} staff={staff} />}
-          {AuthService.getUserRole() === 'SUPERVISOR' && <SupervisorDashboard projects={projects} staff={staff} /> }
+          {AuthService.getUserRole() === 'SUPERVISOR' && <SupervisorDashboard projects={projects} students={students} /> }
         </div>
       </div>
     );

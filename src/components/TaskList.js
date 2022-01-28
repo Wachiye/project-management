@@ -1,8 +1,7 @@
-import {Link} from "react-router-dom";
 import TaskService from "../services/TaskService";
 import React, {useState} from "react";
 import Alert from "./Alert/Alert";
-import DateFormat from "../utils/DateFormat";
+import {shortDate} from "../utils/DateFormat";
 import isLoading from "../utils/LoadingUtil";
 
 const DeleteBtn = ({_id, changeStatus, deleteTask, }) => {
@@ -23,7 +22,7 @@ const DeleteBtn = ({_id, changeStatus, deleteTask, }) => {
         </>
     );
 }
-const TaskList = ({tasks, deleteTask}) => {
+const TaskList = ({tasks, deleteTask, refreshFun}) => {
     const [alert,setAlert] = useState({});
     const [hasAlert, setHasAlert] = useState(false);
 
@@ -37,7 +36,6 @@ const TaskList = ({tasks, deleteTask}) => {
             return null;
         else {
             isLoading(true);
-            console.log("tasks id:" + taskId + " status:" + status)
             let response = await TaskService.setStatus(taskId,status);
             if(response.error){
                 setAlert(response.error);
@@ -46,14 +44,14 @@ const TaskList = ({tasks, deleteTask}) => {
                     if(t._id === taskId)
                         t = response.data.data;
                 })];
-                
 
                 setAlert({
-                    title:"Server Response",
+                    
                     message: response.data.message,
                     type:"success"
                 });
             }
+            refreshFun()
             isLoading(false);
         }
     }
@@ -68,9 +66,7 @@ const TaskList = ({tasks, deleteTask}) => {
                 setAlert(response.error);
                 setHasAlert(true);
             } else {
-                this.setState({
-                    tasks : this.state.tasks.filter( m => m._id !== taskId)
-                });
+               tasks = [...tasks.filter( m => m._id !== taskId)];
                 setAlert({
                     title : 'Operation successful',
                     message: response.data.message,
@@ -78,6 +74,7 @@ const TaskList = ({tasks, deleteTask}) => {
                 });
                 setHasAlert(true);
             }
+            refreshFun();
             isLoading(false);
         }
 
@@ -91,12 +88,12 @@ const TaskList = ({tasks, deleteTask}) => {
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Status</th>
-                <th>Action</th>
+                {deleteTask && <th>Action</th> }
             </tr>
             </thead>
             <tbody>
             <tr>
-                <td colSpan="5">
+                <td colSpan="6">
                     {hasAlert && <Alert alert={alert} onClick={removeAlert}/>}
                 </td>
             </tr>
@@ -107,19 +104,20 @@ const TaskList = ({tasks, deleteTask}) => {
                         {task.name} <br />
                         <small className="">{task?.description}</small>
                     </td>
-                    <td>{DateFormat(task?.startDate).toDateString() || "--"}</td>
-                    <td>{DateFormat(task?.endDate).toDateString() || "--"}</td>
+                    <td>{shortDate(task?.startDate) || "--"}</td>
+                    <td>{shortDate(task?.endDate) || "--"}</td>
                     <td>{task.status}</td>
+                    {deleteTask && (
                     <td className="text-center">
                         <ul className="list-inline">
-                            <li className="list-inline-item">
-                                <Link className="btn btn-outline-info btn-sm" to={`/task/${task._id}`}>
-                                    <i className="fa fa-eye"></i>
-                                </Link>
-                            </li>
-                            {deleteTask && <DeleteBtn _id={task._id} changeStatus={changeStatus} deleteTask={()=>delTask(task._id)}  />}
+                            <DeleteBtn 
+                                _id={task._id}
+                                changeStatus={changeStatus}
+                                deleteTask={()=>delTask(task._id)}
+                                />
                         </ul>
                     </td>
+                    )}
                 </tr>
             ))}
             </tbody>

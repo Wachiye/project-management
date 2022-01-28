@@ -100,9 +100,13 @@ class Settings extends Component{
                                 <div> </div>
                             </div>
                         </div>
+                        <div className="col-12">
+                            <p className="lead" >Sets the submission periods of projects and project files</p>
+                        </div> 
                     </div>
                     <div className="row shadow">
                         <div className="col-12 mb-2">
+                    
                             <div className="pull-right pt-4" >
                                 <ul className="list-inline">
                                     <li className="list-inline-item">
@@ -119,6 +123,7 @@ class Settings extends Component{
                         <div className="col-12">
                             {hasAlert && <Alert alert={alert} onClick={this.removeAlert} /> }
                         </div>
+                        
                     </div>
                 </div>
                 <SettingList settings={settings} canDelete={ this.isSuperUser} deleteFun={this.deleteSetting} />

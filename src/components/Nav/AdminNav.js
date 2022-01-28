@@ -1,6 +1,8 @@
 import {Link} from "react-router-dom";
 import AuthService from "../../services/AuthService";
 import React from "react";
+import $ from "jquery";
+import ProjectService from "../../services/ProjectService";
 
 const StudentNav = () => {
   return (
@@ -20,11 +22,22 @@ const StudentNav = () => {
           My Projects
         </Link>
       </li>
+        <li className="nav-item">
+            <Link className="nav-link" to="/guides">
+                Guides
+            </Link>
+        </li>
     </>
   );
 };
 
 const EvaluatorNav = () => {
+  let pendingProjects = null;
+
+  ProjectService.getAllByStatus('WAITING_APPROVAL').then(res => {
+    pendingProjects = res.data?.data
+  })
+
   return (
     <>
       <li className="nav-item">
@@ -43,11 +56,29 @@ const EvaluatorNav = () => {
         </Link>
       </li>
       <li className="nav-item">
-        <Link className="nav-link" to="/approve-projects">
-          Approve Projects
+        <Link className="nav-link" to="/my-projects">
+          My Projects
         </Link>
       </li>
-        <SettingsNav/>
+      {pendingProjects && (
+        <li className="nav-item">
+          <Link className="nav-link" to="/approve-projects">
+            Approve Projects
+            <span className="badge text-danger pull-right">{pendingProjects?.length || 0 }</span>
+          </Link>
+        </li>
+      )}
+      <li className="nav-item">
+        <Link className="nav-link" to="/reports">
+            Reports
+        </Link>
+      </li>
+      <li className="nav-item">
+        <Link className="nav-link" to="/guides">
+            Guides
+        </Link>
+      </li>
+      <SettingsNav/>
     </>
   );
 };
@@ -56,7 +87,7 @@ const SupervisorNav = () => {
   return (
     <>
       <li className="nav-item">
-        <Link className="nav-link" to="/my-students">
+        <Link className="nav-link" to="/students">
           My Students
         </Link>
       </li>
@@ -65,6 +96,11 @@ const SupervisorNav = () => {
           My Projects
         </Link>
       </li>
+        <li className="nav-item">
+            <Link className="nav-link" to="/guides">
+                Guides
+            </Link>
+        </li>
     </>
   );
 };
@@ -73,21 +109,15 @@ const AdminNav = () => {
   return (
     <>
       <li className="nav-item">
-        <Link className="nav-link" to="/staff">
-          Staff
+        <Link className="nav-link" to="/users">
+          Users
         </Link>
       </li>
       <li className="nav-item">
-        <Link className="nav-link" to="/students">
-          Students
+        <Link className="nav-link" to="/messages">
+          Messages
         </Link>
       </li>
-      <li className="nav-item">
-        <Link className="nav-link" to="/projects">
-          Projects
-        </Link>
-      </li>
-        <SettingsNav/>
     </>
   );
 };
@@ -118,10 +148,18 @@ const Nav = (props) => {
             window.location ="/login";
         }
     }
+
+    function toggleNav() {
+        $('.admin-nav').toggleClass('active');
+    }
   return (
     <div className="admin-nav">
       <div className="nav-header">
-        <h5>{props.role} Dashboard</h5>
+        <h5>{props.role} Dashboard
+            <span className="pull-right d-lg-none" onClick={() => toggleNav()} >
+                <i className="fa fa-close"></i>
+            </span>
+        </h5>
       </div>
       <ul className="nav flex-column">
         <li className="nav-item">
@@ -135,11 +173,6 @@ const Nav = (props) => {
             Notifications
           </Link>
         </li>
-          <li className="nav-item">
-              <Link className="nav-link" to="/reports">
-                  Reports
-              </Link>
-          </li>
         <li className="nav-item">
           <Link className="nav-link" to="/profile">
             Profile

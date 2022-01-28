@@ -38,6 +38,12 @@ import Help from "./components/Help";
 import ProjectFiles from "./pages/ProjectFiles";
 import ViewProjectFile from "./pages/ViewProjectFile";
 import ApproveProjects from "./pages/ApproveProjects";
+import Messages from "./pages/Messages";
+import ProjectReport from "./components/Reports/ProjectReport";
+import Verify from "./pages/Verify";
+import Guides from "./pages/Guides";
+import NewGuide from "./pages/NewGuide";
+import ViewGuide from "./pages/ViewGuide";
 
 function App() {
   return (
@@ -47,9 +53,9 @@ function App() {
         <PublicRoute path="/login" exact component={LoginPage} />
         <PublicRoute path="/register" exact component={RegisterPage} />
         <PublicRoute path="/contact" exact component={Contact} />
+        <PublicRoute path="/verify/:code" exact component={Verify} />
 
         <PrivateRoute path="/dashboard" exact component={Dashboard} />
-
         <PrivateRoute path="/projects" exact component={ProjectsPage} />
         <PrivateRoute path="/projects/:projectId" exact component={ViewProjectPage} />
         <PrivateRoute path="/my-projects" exact component={MyProjects} />
@@ -62,6 +68,7 @@ function App() {
         <PrivateRoute path="/projects/:projectId/comments" exact component={Comments} />
         <PrivateRoute path="/projects/:projectId/files" exact component={ProjectFiles} />
         <PrivateRoute path="/projects/:projectId/files/:fileId" exact component={ViewProjectFile} />
+        <PrivateRoute path="/projects/:projectId/report" exact component={ProjectReport} />
         <PrivateRoute path="/notifications" exact component={Notifications} />
         <PrivateRoute path={"/reports"} exact component={Reports} />
 
@@ -71,8 +78,14 @@ function App() {
         <PrivateRoute path="/staff" exact component={Staff} />
         <PrivateRoute path="/new-user" exact component={NewUser} />
 
+        <PrivateRoute path="/guides" exact component={Guides} />
+        <PrivateRoute path="/new-guide" exact component={NewGuide} />
+        <PrivateRoute path="/guides/:guideId" exact component={ViewGuide} />
+
         <PrivateRoute path="/settings" exact component={Settings} />
-        <Route path="/help" exact component={Help} />
+        <PrivateRoute path="/messages" exact component={Messages} />
+
+        <PrivateRoute path="/help" exact component={Help} />
         <Route path="*" exact component={NotFound} />
       </Switch>
     </Router>

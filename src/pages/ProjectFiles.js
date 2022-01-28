@@ -10,6 +10,7 @@ import NewFile from "../components/NewFile";
 import isLoading from "../utils/LoadingUtil";
 
 import {saveAs} from 'file-saver';
+import AuthService from "../services/AuthService";
 
 class ProjectFiles extends Component{
     constructor(props) {
@@ -28,6 +29,9 @@ class ProjectFiles extends Component{
         this.setActive = this.setActive.bind(this);
         this.getProjectFiles = this.getProjectFiles.bind(this);
         this.downloadFiles = this.downloadFiles.bind(this);
+        this.canApproveFile = this.canApproveFile.bind(this);
+        this.approveFile = this.approveFile.bind(this);
+        this.isOwner = this.isOwner.bind(this);
         this.deleteFile = this.deleteFile.bind(this);
     }
 
@@ -77,6 +81,23 @@ class ProjectFiles extends Component{
             return null;
         }
     }
+
+    async approveFile(fileId, status){
+        isLoading(true);
+        let response = await FileService.setStatus(fileId,status);
+        if(response.error){
+            this.setAlert(response.error);
+        } else{
+            this.setAlert({
+                message: response.data.message,
+                type:"success"
+            });
+        
+            await this.getProjectFiles();
+        }
+        isLoading(false);
+    }
+
     async deleteFile(fileId){
         let del = window.confirm("Are you sure you want to delete this file");
 
@@ -87,7 +108,6 @@ class ProjectFiles extends Component{
                 this.setAlert(response.error);
             } else{
                 this.setAlert({
-                    title :" Server Response",
                     message: response.data.message,
                     type:"success"
                 });
@@ -96,6 +116,26 @@ class ProjectFiles extends Component{
             isLoading(false);
         }
     }
+
+    canApproveFile(){
+        let email = AuthService.getUserEmail();
+        let project = this.state.files[0]?.project || {};
+
+        if(project && ( email === project?.evaluator?.user?.email || email === project?.supervisor?.user?.email))
+            return true;
+        else
+            return false;
+    }
+    isOwner (){
+        let email = AuthService.getUserEmail();
+        let project = this.state.files[0]?.project || {};
+
+        if(project && email === project?.student?.user?.email)
+            return true;
+        else
+            return false;
+    }
+
     async componentDidMount(){
         isLoading(true);
         this.setState({
@@ -115,10 +155,14 @@ class ProjectFiles extends Component{
                                 <Link to="/my-projects" className="btn btn-sm btn-outline-secondary">My Projects</Link>
                                 <h3>Project Files</h3>
                                 <div>
-                                    <button className="btn btn-sm btn-outline-secondary" onClick={()=>this.setActive(true)}>New File</button>
-                                    <ModalContainer id="new-comment" title={`Upload Project file`} active={active} setActive={this.setActive} size="lg">
-                                        <NewFile projectId={projectId} />
-                                    </ModalContainer>
+                                {AuthService.getUserRole() === 'STUDENT' && (
+                                    <>
+                                        <button className="btn btn-sm btn-outline-secondary" onClick={()=>this.setActive(true)}>New File</button>
+                                        <ModalContainer id="new-comment" title={`Upload Project file`} active={active} setActive={this.setActive} size="lg">
+                                            <NewFile projectId={projectId} />
+                                        </ModalContainer>
+                                    </>
+                                )}
                                     <button className="btn btn-success mx-2" onClick={() => this.downloadFiles()}>
                                         <i className="fa fa-download text-light"></i> Download All
                                     </button>
@@ -131,7 +175,13 @@ class ProjectFiles extends Component{
                                 <div className="row">
                                     {files && files.map(file => (
                                         <div className="col-sm-6 col-md-4 mb-2" key={file?._id}>
-                                            <ProjectFileCard file={file}/>
+                                            <ProjectFileCard
+                                                file={file}
+                                                canApprove={this.canApproveFile()}
+                                                approveFileFun={this.approveFile}
+                                                canDelete={this.isOwner()}
+                                                deleteFileFun={this.deleteFile}
+                                                />
                                         </div>
                                     ))}
                                 </div>

@@ -79,7 +79,7 @@ class Notifications extends Component{
                     notifications: this.state.notifications.filter( n => n._id !== notificationId)
                 });
                 this.setAlert({
-                    title:"Server Response",
+                    
                     message: response.data.message,
                     type:"info"
                 });
@@ -95,6 +95,7 @@ class Notifications extends Component{
     
     render() {
         let { notifications, alert, hasAlert, active, canDelete} = this.state;
+        console.log({notifications});
         return(
            <div className="admin-main">
                <div className="container">
@@ -118,7 +119,7 @@ class Notifications extends Component{
                        <div className="col-12 mb-2">
                            {hasAlert && <Alert alert={alert} onClick={this.removeAlert} /> }
                        </div>
-                       <div className="col-8 mx-auto mb-2">
+                       <div className="col-md-8 mx-auto mb-2">
                            {notifications && <NotificationList notifications={notifications} canDelete={canDelete} deleteFun={this.deleteNotification}/>}
                        </div>
                    </div>

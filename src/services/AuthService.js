@@ -20,17 +20,24 @@ class AuthService {
         return await HttpService.doPost('/auth/changepwd',data);
     }
 
+    async verifyAccount(code) {
+        return await HttpService.doPost(`/auth/verify/${code}`);
+    }
+
     //logout
     async logout(){
         return await HttpService.doPost("/auth/logout",null);
     }
+    
     setToken(token){
         localStorage.setItem("_apams", JSON.stringify(token));
     }
+
     getTokenData(){
         let tokenData = localStorage.getItem("_apams");
         return JSON.parse(tokenData);
     }
+
     getToken(){
         return this.getTokenData()?.token;
     }

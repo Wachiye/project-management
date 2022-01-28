@@ -1,12 +1,14 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import UpdateCard from "./UpdateCard";
 import {QuickUpdate} from "../../utils/ProjectUtil";
 import Alert from "../Alert/Alert";
 import {shortDate} from "../../utils/DateFormat";
 import ModalContainer from "../Modal/ModalContainer";
 import ProjectStatusReport from "../Reports/ProjectStatusReport";
+import UserService from "../../services/UserService";
+import AuthService from "../../services/AuthService";
 
-const ProjectRow = ({project}) => {
+const ProjectRow = ({project, user}) => {
     const [active, setActive] = useState(false);
     return(
         <tr key={project?._id}>
@@ -25,39 +27,55 @@ const ProjectRow = ({project}) => {
             <td>{project?.status}</td>
             <td>{project?.daysLeft}</td>
             <td className="text-center">
-                <button className="btn btn-sm" onClick={()=>setActive(true)}>View</button>
+                <button className="btn btn-sm btn-info" onClick={()=>setActive(true)}>Report</button>
                 <ModalContainer title={'Project Report'} id={project?._id} active={active} setActive={setActive} size={"lg"}>
-                    <ProjectStatusReport project={project}  showSelect={false}/>
+                    <ProjectStatusReport project={project} user={user}  showSelect={false}/>
                 </ModalContainer>
             </td>
         </tr>
     );
 }
-const SupervisorDashboard = ({ projects, staff }) => {
+const SupervisorDashboard = ({ projects, students }) => {
     const [alert,setAlert] = useState({});
     const [hasAlert, setHasAlert] = useState(false);
+    const [user, setUser] = useState({});
 
     // const myProjects = projects.filter( p=> p.evaluator?.user?.email === AuthService.getUserEmail() && DateFormat(p.startDate).getFullYear() === new Date().getFullYear());
+    useEffect( ()=>{
+        getUser();
+    })
 
     const removeAlert = () => {
         setAlert(null);
         setHasAlert(false);
     }
+
+    const getUser = async () => {
+        await UserService.getOneByEmail( AuthService.getUserEmail()).then( response => {
+            setUser(response.data?.data || {});
+        }).catch( error => {
+            console.log(error);
+        });
+    }
+
     const data =  [
         {
             title: "All Projects",
             text: projects?.length || 0,
-            link:"/projects"
+            link:"/projects",
+            icon:"files-o"
         },
         {
             title:"Assigned Projects",
             text: projects?.length || 0,
-            link: "/students"
+            link: "/my-projects",
+            icon:"files-o"
         },
         {
             title:"Students",
-            text: staff?.length || 0,
-            link: "/students"
+            text: students?.length || 0,
+            link: "/students",
+            icon:"users"
         },
     ];
     return(
@@ -104,7 +122,7 @@ const SupervisorDashboard = ({ projects, staff }) => {
                                 </thead>
                                 <tbody>
                                 {projects?.map( project => (
-                                    <ProjectRow project={project} key={project?._id} />
+                                    <ProjectRow key={project?._id} project={project} user={user}  />
                                 ))}
                                 </tbody>
                             </table>

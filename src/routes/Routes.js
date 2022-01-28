@@ -7,11 +7,16 @@ import AdminHeader from "../components/Header/AdminHeader";
 import AuthService from "../services/AuthService";
 import AdminNav from "../components/Nav/AdminNav";
 import AdminFooter from "../components/Footer/AdminFooter";
+import $ from "jquery";
 
 const PublicLayout = ({ children }) => {
+  function toggleNav() {
+      $('.navbar-collapse').removeClass('show');
+  }
   return (
     <div className="wrapper">
       <Header />
+      {toggleNav()}
       {children}
       <Footer />
     </div>
@@ -19,11 +24,17 @@ const PublicLayout = ({ children }) => {
 };
 
 const PrivateLayout = ({ children, role }) => {
+    function toggleNav() {
+        $('.admin-nav').removeClass('active');
+    }
   return (
     <div className="admin-wrapper">
       <AdminHeader />
       <AdminNav role={role} />
-      {children}
+        <>
+            {toggleNav()}
+            {children}
+        </>
       <AdminFooter />
     </div>
   );

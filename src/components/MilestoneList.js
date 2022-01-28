@@ -6,11 +6,10 @@ import isLoading from "../utils/LoadingUtil";
 
 import $ from 'jquery';
 import TaskList from "./TaskList";
-import AuthService from "../services/AuthService";
 import ModalContainer from "./Modal/ModalContainer";
 import NewTask from "../pages/NewTask";
 
-const Milestone = ({milestone, _id, changeStatus, deleteMilestone, delMilestone}) => {
+const Milestone = ({milestone, _id, changeStatus, deleteMilestone, delMilestone, refreshFun}) => {
     const [active, setActive] = useState( false);
 
     const showHelp = (evt) =>{
@@ -21,14 +20,6 @@ const Milestone = ({milestone, _id, changeStatus, deleteMilestone, delMilestone}
     const toggleClass = (groupClass, targetId) =>{
         $(`.${groupClass}`).removeClass('active');
         $(`#${targetId}`).toggleClass("active");
-    }
-
-    const isOwner = () =>{
-        let email = AuthService.getUserEmail();
-        if(email === milestone?.project?.student?.user?.email)
-            return true;
-        else
-            return false;
     }
 
     return (
@@ -47,28 +38,33 @@ const Milestone = ({milestone, _id, changeStatus, deleteMilestone, delMilestone}
                                 <i className="fa fa-plus"></i>
                             </button>
                         </li>
-                        {deleteMilestone && <DeleteBtn deleteMilestone={()=>delMilestone(milestone._id)} _id={milestone._id} changeStatus={changeStatus} />}
+                        {deleteMilestone && <DeleteBtn deleteMilestoneFun={()=>delMilestone(milestone._id)} _id={milestone._id} changeStatus={changeStatus} />}
                     </ul>
                 </td>
             </tr>
             <tr>
                 <td colSpan={7} >
                     <div id={`tasks-list-${milestone._id}`}  className="task-list">
+                        
                         <div className="card-title">
-                            Milestone Tasks
+                            <h6 className="text-info">Tasks under {milestone?.name}</h6>
+                            {deleteMilestone && (
+                            <>
                             <button className="btn btn-sm btn-success mx-3" onClick={ () => setActive(true)}>New Task</button>
                             <ModalContainer title={"Add New Task"} id={_id} active={active} setActive={setActive} size="md">
                                 <NewTask milestoneId={_id} isModal={true} />
                             </ModalContainer>
+                            </>
+                        )} 
                         </div>
-                        {milestone.tasks && <TaskList tasks={milestone.tasks} deleteTask={isOwner} /> }
+                        {milestone.tasks && <TaskList tasks={milestone.tasks} deleteTask={deleteMilestone } refreshFun={refreshFun}/> }
                     </div>
                 </td>
             </tr>
         </>
     )
 }
-const DeleteBtn = ({deleteMilestone, changeStatus, _id}) => {
+const DeleteBtn = ({deleteMilestoneFun, changeStatus, _id}) => {
     return(
         <>
         <li className="list-inline-item">
@@ -79,7 +75,7 @@ const DeleteBtn = ({deleteMilestone, changeStatus, _id}) => {
             </select>
         </li>
         <li className="list-inline-item">
-            <button className="btn btn-danger btn-sm" type={"button"} onClick={()=>deleteMilestone()}>
+            <button className="btn btn-danger btn-sm" type={"button"} onClick={()=>deleteMilestoneFun()}>
                 <i className="fa fa-trash"></i>
             </button>
         </li>
@@ -87,7 +83,7 @@ const DeleteBtn = ({deleteMilestone, changeStatus, _id}) => {
     );
 }
 
-const MilestoneList = ({milestones, deleteMilestone}) => {
+const MilestoneList = ({milestones, deleteMilestone, refreshFun}) => {
     const [alert,setAlert] = useState({});
     const [hasAlert, setHasAlert] = useState(false);
 
@@ -105,15 +101,13 @@ const MilestoneList = ({milestones, deleteMilestone}) => {
                 setAlert(response.error);
                 setHasAlert(true);
             } else {
-                this.setState({
-                    milestones : this.state.milestones.filter( m => m._id !== milestoneId)
-                });
                 setAlert({
                     title : 'Operation successful',
                     message: response.data.message,
                     type:"success"
                 });
                 setHasAlert(true);
+                refreshFun();
             }
             isLoading(false);
         }
@@ -135,11 +129,12 @@ const MilestoneList = ({milestones, deleteMilestone}) => {
                 });
 
                 setAlert({
-                    title:"Server Response",
+                    
                     message: response.data.message,
                     type:"success"
                 });
             }
+            refreshFun();
             isLoading(false);
         }
     }
@@ -164,7 +159,7 @@ const MilestoneList = ({milestones, deleteMilestone}) => {
                 </td>
             </tr>
             {milestones && milestones.map( milestone => (
-                <Milestone key={milestone._id} milestone={milestone} _id={milestone._id}  changeStatus={changeStatus} delMilestone={delMilestone} deleteMilestone={deleteMilestone} /> 
+                <Milestone key={milestone._id} milestone={milestone} _id={milestone._id}  changeStatus={changeStatus} delMilestone={delMilestone} deleteMilestone={deleteMilestone} refreshFun={refreshFun} />
             ))}
             </tbody>
         </table>

@@ -1,11 +1,21 @@
 import * as $ from 'jquery';
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import { Link } from 'react-router-dom';
 import ModalContainer from "./Modal/ModalContainer";
 import ContactForm from "./ContactForm";
+import AuthService from '../services/AuthService';
+import UserService from '../services/UserService';
 
 const Help =  () => {
     const [active, setActive] = useState(false);
+    const [user, setUser] = useState(null);
+
+    useEffect( () => {
+        let email = AuthService.getUserEmail();
+        UserService.getOneByEmail(email).then( res => {
+            setUser(res?.data?.data || null);
+        });
+    }, []);
 
     const showHelp = (evt) =>{
         let targetId = evt.target.getAttribute("data-target");
@@ -28,7 +38,7 @@ const Help =  () => {
                             <div>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={()=>setActive(true)}>Contact Us</button>
                                 <ModalContainer id="new-comment" title={`Contact Us`} active={active} setActive={setActive} size="md">
-                                    <ContactForm />
+                                    <ContactForm user={user} />
                                 </ModalContainer>
                             </div>
                         </div>
@@ -49,7 +59,7 @@ const Help =  () => {
                                                <i className="fa fa-plus"></i>
                                       </span>
                                        <div className="clearfix"></div>
-                                       <div id="getting-started" className="help-item active">
+                                       <div id="getting-started" className="help-item">
                                             <div>The System is designed to be used by different types of users, with features and functions appropriate for each one. The system will support fours types of user: Administrator, Evaluator, Supervisor and Student. <br />
                                                 <ul style={{listStyle:"inside"}}>
                                                     <li>Administrators have full control over the entire system.</li>
@@ -140,7 +150,6 @@ const Help =  () => {
                                             <div>
                                                 <strong>To Manage your Account:</strong> <br />
                                                 <ul style={{listStyle:"inside"}}>
-                                                    <li><Link className="card-link" to='/login'>Login</Link> to your account using your email and password.</li>
                                                     <li>On the <strong>Dashboard Menu</strong>, Select <strong>Profile</strong>. Profile Page will appear</li>
                                                     <li>You can enter new details or change your password on the profile page</li>
                                                 </ul>
@@ -168,7 +177,6 @@ const Help =  () => {
                                            <div>
                                                 <strong>To Open a Project Journal / Create a new project:</strong> <br />
                                                 <ul style={{listStyle:"inside"}}>
-                                                    <li><Link className="card-link" to='/login'>Login</Link> to your account using your email and password.</li>
                                                     <li>On the <strong>Dashboard Menu</strong>, Select <strong>New Project</strong>. New Project page will appear</li>
                                                     <li>Enter the details of the project as required</li>
                                                     <li>Hit the <strong>Submit Project</strong> button and wait for the server response</li>
@@ -200,7 +208,6 @@ const Help =  () => {
                                            <div>
                                                 <strong>To Approve Pending Projects:</strong> <br />
                                                 <ul style={{listStyle:"inside"}}>
-                                                    <li><Link className="card-link" to='/login'>Login</Link> to your account using your email and password.</li>
                                                     <li>On the <strong>Dashboard Menu</strong>, Select <strong>Approve Projects</strong>. A new Project page will appear listing all projects with a status of <em>WAITING APPROVAL</em></li>
                                                     <li>For each project that you wish to approve, Hit the <strong>Approve</strong> button next to it. You can also view the project details by clicking the <strong>View</strong> button next to it.</li>
                                                     <li>Once a project has been accepted by the Evaluator, the respective student will be notified via email.</li>
@@ -229,9 +236,7 @@ const Help =  () => {
                                                 <strong>To Create a Project Milestone:</strong> <br />
                                                 <ul style={{listStyle:"inside"}}>
                                                     <li>
-                                                        <Link className="card-link" to='/login'>Login</Link> to your account using your email and password.</li>
-                                                    <li>
-                                                        On the <strong>Dashboard Menu</strong>, Select <strong>My Projects</strong>. A new Project page will appear listing all your projects </li>
+                                                        On the <strong>Dashboard Menu</strong>, Select <strong>My Projects</strong>. A new page will appear listing all your projects </li>
                                                     <li>
                                                         On the dropdown list <strong>Select the project you want to add milestone</strong>
                                                     </li>
@@ -294,32 +299,38 @@ const Help =  () => {
                                            <i className="fa fa-plus"></i>
                                        </button>
                                        <div className="clearfix"></div>
-                                       <div id="uploading-project-files" className="help-item">Uploading Project Files</div>
+                                       <div id="uploading-project-files" className="help-item">
+                                            <p>
+                                               Project Files are the documentations such as Project Proposal, SRS, SDD and Manuals
+                                           </p>
+                                           <div>
+                                                <strong>NOTE:</strong> <br />
+                                                <ol style={{listStyle:"inside"}} start={1}>
+                                                    <li>Only student owner of the project can submit the project files</li>
+                                                    <li>Project Supervisor or Evaluator can approve or reject files</li>
+                                                </ol>
+                                           </div>
+                                           <div>
+                                                <strong>To Upload a Project File:</strong> <br />
+                                                <ul style={{listStyle:"inside"}}>
+                                                    <li>
+                                                        On the <strong>Dashboard Menu</strong>, Select <strong>My Projects</strong>. A new page will appear listing all your projects </li>
+                                                    <li>
+                                                        On the dropdown list <strong>Select the project you want to add file</strong>
+                                                    </li>
+                                                    <li>
+                                                        On the tab menu below the dropdown list, <strong>Click Files</strong>. A new page will appear listing all files available in the project if any.
+                                                    </li>
+                                                    <li>
+                                                        On to top right <strong>Click New File</strong> button to display a pop window.
+                                                    </li>
+                                                    <li>
+                                                        Enter the required details and click the <strong> Upload File</strong> button.
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                       </div>
                                    </li>
-                                    <li className="list-group-item" >
-                                        <h5 className="pull-left text-primary pull-left">Commenting on Projects</h5>
-                                        <button className="btn btn-sm btn-primary pull-right" data-target="commenting-on-projects" onClick={ (evt)=>showHelp(evt)}>
-                                            <i className="fa fa-plus"></i>
-                                        </button>
-                                        <div className="clearfix"></div>
-                                        <div id="commenting-on-projects" className="help-item">Commenting On Projects</div>
-                                    </li>
-                                    <li className="list-group-item" >
-                                        <h5 className="pull-left text-primary pull-left">Generating Reports</h5>
-                                        <span className="btn btn-sm btn-primary pull-right" data-target="generating-reports" onClick={ (evt)=>showHelp(evt)}>
-                                               <i className="fa fa-plus"></i>
-                                      </span>
-                                        <div className="clearfix"></div>
-                                        <div id="generating-reports" className="help-item">Generating Reports</div>
-                                    </li>
-                                    <li className="list-group-item" >
-                                        <h5 className="pull-left text-primary pull-left">Downloading Reports</h5>
-                                        <span className="btn btn-sm btn-primary pull-right" data-target="download-reports" onClick={ (evt)=>showHelp(evt)}>
-                                               <i className="fa fa-plus"></i>
-                                      </span>
-                                        <div className="clearfix"></div>
-                                        <div id="download-reports" className="help-item">Downloading Reports</div>
-                                    </li>
                                </ul>
                            </div>
                        </div>

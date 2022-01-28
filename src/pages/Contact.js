@@ -1,22 +1,11 @@
 import React, { Component } from "react";
 import ContactForm from "../components/ContactForm";
 
-export class Contact extends Component {
-  constructor(props) {
-    super(props);
+import {REACT_APP_SITE} from '../config/env';
 
-    this.state = {
-      contact:{
-        email:"apams.egerton@gmail.com",
-        phone:"254790983123",
-        address:"P.O.Box 536, Egerton"
-      }
-    };
-  }
+export class Contact extends Component {
 
   render() {
-    let {contact} = this.state;
-
     return (
       <main className="main">
         <div className="container text-center">
@@ -36,19 +25,19 @@ export class Contact extends Component {
                     <li className="list-group-item">
                       <i className="fa fa-envelope" aria-hidden="true"></i>
                       <span className="mx-1">Email</span>: <span className="pull-right">
-                          <a className="card-link" href={`mailto:${contact.email}?Subject=APAMS%20CONTACT%20FORM`}>{contact.email}</a>
+                          <a className="card-link" href={`mailto:${REACT_APP_SITE.EMAIL}?Subject=APAMS%20CONTACT%20FORM`}>{REACT_APP_SITE.EMAIL}</a>
                       </span>
                     </li>
                     <li className="list-group-item">
                       <i className="fa fa-phone" aria-hidden="true"></i>
                       <span className="mx-1">Phone</span>: <span className="pull-right">
-                        <a className="card-link" href={`tel:${contact.phone}`}>{contact.phone}</a>
+                        <a className="card-link" href={`tel:${REACT_APP_SITE.PHONE}`}>{REACT_APP_SITE.PHONE}</a>
                       </span>
                     </li>
                     <li className="list-group-item">
                       <i className="fa fa-address-card" aria-hidden="true"></i>
                       <span className="mx-1">Address</span>: <span className="pull-right">
-                        <address>{contact.address}</address>
+                        <address>{REACT_APP_SITE.ADDRESS}</address>
                       </span>
                     </li>
                   </ul>

@@ -2,8 +2,6 @@ import {Link} from "react-router-dom";
 import React from "react";
 import {shortDate} from "../../utils/DateFormat";
 
-const MILLISECONDS_PER_DAY = 1000 * 3600 * 24;
-
 const StudentDashboard = ({student, projects}) => {
 
     const activeProject = student?.projects?.filter( p => p.status === "IN_PROGRESS")[0];
@@ -39,24 +37,12 @@ const StudentDashboard = ({student, projects}) => {
         return count;
     }
 
-    const projectTimeInDays = () => {
-        console.log({activeProject})
-      let start = activeProject?.startDate;
-      let end = activeProject?.endDate;
-      let time = (end - start) / MILLISECONDS_PER_DAY;
-      return Math.ceil(time);
-    }
-
-    const timeLeftInDays = () => {
-        let start = activeProject?.startedOn || activeProject?.startDate
-        let end = activeProject?.finishedOn || activeProject?.endDate;
-        let time = (end - start) / MILLISECONDS_PER_DAY;
-        return Math.ceil(time);
-    }
-
     const timeUsedInPercentage = () => {
-        return Math.ceil(timeLeftInDays () / projectTimeInDays () ) * 100;
+        let daysUsed = activeProject?.projectDays - activeProject?.daysLeft;
+        return Math.ceil( daysUsed / activeProject?.projectDays ) * 100;
     }
+
+    console.log({activeProject})
     return (
         <>
             <div className="row">
@@ -67,7 +53,7 @@ const StudentDashboard = ({student, projects}) => {
                                 <h5 className="card-title">Quick Updates</h5>
                                 <div className="card-text">
                                     <div className="row">
-                                        <div className="col-6 col-md-4 col-xl-2">
+                                        <div className="col-6 col-md-3 ">
                                             <Link to="/projects" className="update">
                                                 <div className="icon d-flex justify-content-center align-items-center">
                                                     <img src="" alt="" width="35" height="35" />
@@ -76,7 +62,7 @@ const StudentDashboard = ({student, projects}) => {
                                                 <p className="text">{projects?.length || 0}</p>
                                             </Link>
                                         </div>
-                                        <div className="col-6 col-md-4 col-xl-2">
+                                        <div className="col-6 col-md-3 ">
                                             <Link to="/my-projects" className="update">
                                                 <div className="icon d-flex justify-content-center align-items-center">
                                                     <img src="" alt="" width="35" height="35" />
@@ -85,7 +71,7 @@ const StudentDashboard = ({student, projects}) => {
                                                 <p className="text">{student?.projects?.length || 0}</p>
                                             </Link>
                                         </div>
-                                        <div className="col-6 col-md-4  col-xl-2">
+                                        <div className="col-6 col-md-3  ">
                                             <Link to={`/project-milestones/${activeProject?._id}`} className="update">
                                                 <div className="icon d-flex justify-content-center align-items-center">
                                                     <img src="" alt="" width="35" height="35" />
@@ -94,32 +80,13 @@ const StudentDashboard = ({student, projects}) => {
                                                 <p className="text">{activeProject?.milestones?.length || 0}</p>
                                             </Link>
                                         </div>
-                                        <div className="col-6 col-md-4 col-xl-2">
+                                        <div className="col-6 col-md-3 ">
                                             <div className="update">
                                                 <div className="icon d-flex justify-content-center align-items-center">
                                                     <img src="" alt="" width="35" height="35" />
                                                 </div>
                                                 <h6 className="title">Project Files</h6>
                                                 <p className="text">{activeProject?.files?.length || 0}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="col-6 col-md-4 col-xl-2">
-                                            <div className="update">
-                                                <div className="icon d-flex justify-content-center align-items-center">
-                                                    <img src="" alt="" width="35" height="35" />
-                                                </div>
-                                                <h6 className="title">All Tasks</h6>
-                                                <p className="text">{tasks || 0}</p>
-                                            </div>
-                                        </div>
-                                        <div className="col-6 col-md-4 col-xl-2">
-                                            <div className="update">
-                                                <div className="icon d-flex justify-content-center align-items-center">
-                                                    <img src="" alt="" width="35" height="35" />
-                                                </div>
-                                                <h6 className="title">Overdue Tasks</h6>
-                                                <p className="text">4</p>
                                             </div>
                                         </div>
                                     </div>
@@ -143,7 +110,7 @@ const StudentDashboard = ({student, projects}) => {
                                 </div>
                             </div>
                             <h6 className="title">Time Available</h6>
-                            <p className="lead">{timeLeftInDays()} Days</p>
+                            <p className="lead">{activeProject?.daysLeft} Days</p>
                         </div>
                         <div className="pending-tasks">
                             <h6 className="title">Pending Tasks</h6>

@@ -108,7 +108,7 @@ class ViewProject extends Component {
         project: response.data.data
       });
       this.setAlert({
-        title:"Server Response",
+        
         message: response.data.message,
         type:"success"
       });
@@ -127,7 +127,7 @@ class ViewProject extends Component {
           project: response.data.data
         });
         this.setAlert({
-          title:"Server Response",
+          
           message: response.data.message,
           type:"success"
         });
@@ -236,6 +236,7 @@ class ViewProject extends Component {
                   <button className="btn btn-success mx-2" onClick={() => this.downloadFiles()}>
                     <i className="fa fa-download text-light"></i> Download
                   </button>
+                  <Link className="btn btn-secondary mx-1" to={`/projects/${project?._id}/report`}>View Report</Link>
                   <EvaluatorActions project={project} supervisors={supervisors} changeStatus={this.changeStatus} setSupervisor={this.setSupervisor}/>
                 </div>
               </div>

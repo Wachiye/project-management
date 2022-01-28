@@ -1,6 +1,8 @@
 import axios from "axios";
+import { REACT_APP_API_URL } from "../config/env";
 
-const baseURL = "http://localhost:8080/api/v1/";
+const baseURL = REACT_APP_API_URL;
+
 const token = JSON.parse(localStorage.getItem("_apams"))?.token;
 
 const Http = axios.create({
@@ -16,9 +18,8 @@ Http.interceptors.response.use(
     if (res.status === 204) {
       res = {
         data: {
-          title: "Operation Successful",
-          type: "success",
-          message: "Operation was successful. No data returned",
+          type: "danger",
+          message: "Item deleted successfully",
         },
       };
     }
@@ -32,7 +33,6 @@ Http.interceptors.response.use(
         error: {
           message: err.response.data.message,
           status: err.response.data.status,
-          title: "Oops",
           type: "danger",
         },
       };
@@ -43,7 +43,7 @@ Http.interceptors.response.use(
         error: {
           code: 500,
           name: "connection_err",
-          title: "CONNECTION ERROR",
+          title: "SERVER_CONNECTION_ERROR",
           type: "danger",
           message:
             "Sorry, but could not connect to the server. Try again later.",

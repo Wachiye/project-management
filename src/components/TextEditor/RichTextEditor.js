@@ -10,12 +10,12 @@ import 'bootstrap/js/dist/dropdown';
 import 'bootstrap/js/dist/tooltip';
 import 'bootstrap/dist/css/bootstrap.css';
 
-const RichTextEditor = ({text = "", handleChangeFun}) => {
+const RichTextEditor = ({text = "", height, handleChangeFun}) => {
     return (
       <ReactSummernote
         value={text}
         options={{
-          height: 120,
+          height: height || 120,
           dialogsInBody: true,
           toolbar: [
             ['style', ['style']],
@@ -23,8 +23,7 @@ const RichTextEditor = ({text = "", handleChangeFun}) => {
             ['fontname', ['fontname']],
             ['para', ['ul', 'ol', 'paragraph']],
             ['table', ['table']],
-            ['insert', ['link']],
-            ['view', ['fullscreen', 'codeview']]
+            ['insert', ['link']]
           ]
         }}
         onChange={(value)=>handleChangeFun(value)}

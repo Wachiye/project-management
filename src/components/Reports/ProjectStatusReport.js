@@ -1,10 +1,7 @@
-import React, {useEffect, useState} from "react";
-import UserService from "../../services/UserService";
-import AuthService from "../../services/AuthService";
+import React from "react";
 import groupMilestones from "../../utils/MilestoneUtil";
 import groupTasks from "../../utils/TaskUtil";
 import {shortDate} from "../../utils/DateFormat";
-import SettingService from "../../services/SettingService";
 
 const  getAllTasks = (milestones) => {
     let tasks = [];
@@ -18,46 +15,22 @@ const  getAllTasks = (milestones) => {
     return tasks;
 }
 
-const ProjectStatusReport = ({project}) => {
-    const [currentProject, setCurrentProject] = useState({});
-    const [user, setUser] = useState({});
-    const [thisYearSettings, setThisYearSettings] = useState([]);
-    const [projectSetting, setProjectSettings] = useState({});
-
-    useEffect( () => {
-        if(project){
-            setCurrentProject(project);
-        }
-
-        UserService.getOneByEmail( AuthService.getUserEmail()).then( response => {
-            setUser(response.data?.data);
-        }).catch( error => {
-            console.log(error);
-        });
-
-        let projectYear = new Date(currentProject?.createdAt).getFullYear();
-
-        SettingService.getAllByYear( projectYear).then( response => {
-            setThisYearSettings( response?.data?.data || []);
-            setProjectSettings( thisYearSettings?.filter( s=> s.category === 'PROJECT')[0] || null);
-        }).catch( error => {
-            console.log(error);
-        });
-    }, [project, currentProject,thisYearSettings, user]);
-
-
-    let {milestones, pendingMilestones, completeMilestones, milestonesInProgress, milestonesProgressInPercentage} = groupMilestones(currentProject?.milestones);
-    let {tasks, pendingTasks, completeTasks, tasksInProgress, taskProgressInPercentage} = groupTasks( getAllTasks(currentProject?.milestones));
-
+const ProjectStatusReport = ({project, projectSetting, thisYearSettings, user}) => {
+    
+    let {milestones, pendingMilestones, completeMilestones, milestonesInProgress, milestonesProgressInPercentage} = groupMilestones(project?.milestones);
+    let {tasks, pendingTasks, completeTasks, tasksInProgress, taskProgressInPercentage} = groupTasks( getAllTasks(project?.milestones));
+    
+    let files = project?.projectFiles;
+        
     return(
-        <div className="container">
+        <div className="container py-1">
             <div className="row">
                 <div className="col-12 mb-2">
-                    <div className="card bg-transparent">
+                    <div className="card bg-transparent border-0">
                         <div className="card-body">
                             <div className="card-text mb-2">
                                 <h4 className="card-title">Project Summary</h4>
-                                <table className="table table-bordered table-responsive">
+                                <table className="table table-bordered table-responsive table-sm">
                                     <thead>
                                     <tr>
                                         <th>Report Date</th>
@@ -68,43 +41,41 @@ const ProjectStatusReport = ({project}) => {
                                     <tbody>
                                     <tr>
                                         <td>{new Date().toDateString()}</td>
-                                        <td>{currentProject?.name}</td>
+                                        <td>{project?.name}</td>
                                         <td>{user?.firstName + " " + user?.lastName}</td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <div className="card-text mb-2">
-                                <h4 className="card-title">Project Overview</h4>
                                 <table className="table table-bordered w-100">
                                     <tbody>
                                     <tr>
-                                        <th>Name</th>
-                                        <td>{currentProject?.name}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Description</th>
-                                        <td>{currentProject?.description}</td>
-                                    </tr>
-                                    <tr>
                                         <th>Languages</th>
-                                        <td>{currentProject?.languages}</td>
+                                        <td>{project?.languages}</td>
                                     </tr>
                                     <tr>
                                         <th>Category</th>
-                                        <td>{currentProject?.category}</td>
+                                        <td>{project?.category}</td>
                                     </tr>
                                     <tr>
                                         <th>Student</th>
-                                        <td>{`${currentProject?.student?.user?.firstName} ${currentProject?.student?.user?.lastName}`}</td>
+                                        <td>
+                                            <a href={`mailto:${project?.student?.user?.email}`}>{project?.student?.user?.fullName || "--"}</a>
+                                            <span className="mx-2">({project?.student?.regNo})</span>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th>Evaluator</th>
-                                        <td>{`${currentProject?.evaluator?.user?.firstName} ${currentProject?.evaluator?.user?.lastName}`}</td>
+                                        <td>
+                                            <a href={`mailto:${project?.evaluator?.user?.email}`}>{project?.evaluator?.user?.fullName || "--"}</a>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th>Supervisor</th>
-                                        <td>{currentProject?.supervisor?.user?.firstName || "--"} {currentProject?.supervisor?.user?.lastName || "--"}</td>
+                                        <td>
+                                            <a href={`mailto:${project?.supervisor?.user?.email}`}>{project?.supervisor?.user?.fullName || "--"}</a>
+                                        </td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -127,7 +98,7 @@ const ProjectStatusReport = ({project}) => {
                                         <td>{completeMilestones?.length}</td>
                                         <td>{milestonesInProgress?.length}</td>
                                         <td>{pendingMilestones?.length}</td>
-                                        <td>{milestonesProgressInPercentage}</td>
+                                        <td>{milestonesProgressInPercentage || "--"}</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -147,7 +118,7 @@ const ProjectStatusReport = ({project}) => {
                                         <td>{completeTasks?.length} </td>
                                         <td>{tasksInProgress?.length}</td>
                                         <td>{pendingTasks?.length}</td>
-                                        <td>{taskProgressInPercentage}</td>
+                                        <td>{taskProgressInPercentage || "--"}</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -160,20 +131,16 @@ const ProjectStatusReport = ({project}) => {
                                         <th>Finished On</th>
                                         <th>Timeframe (Days)</th>
                                         <th>Time Left (Days)</th>
-                                        <th>Progress (%)</th>
-                                        <td>Status</td>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr>
                                         <td>{ shortDate( projectSetting?.startDate)}</td>
-                                        <td>{shortDate( currentProject?.startDate)}</td>
+                                        <td>{shortDate( project?.startDate)}</td>
                                         <td>{ shortDate( projectSetting?.endDate)}</td>
-                                        <td>{shortDate( currentProject?.endDate)}</td>
-                                        <td>{currentProject?.projectDays}</td>
-                                        <td>{currentProject?.daysLeft}</td>
-                                        <td>[Progress (%)]</td>
-                                        <td>[Status]</td>
+                                        <td>{shortDate( project?.endDate)}</td>
+                                        <td>{project?.projectDays}</td>
+                                        <td>{project?.daysLeft}</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -209,6 +176,32 @@ const ProjectStatusReport = ({project}) => {
                                 </table>
                             </div>
                             ):(null)}
+
+                            <div className="card-text mb-2">
+                                <h4 className="card-title">Documentation</h4>
+                                <table className="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>File Name</th>
+                                            <th>Documentation</th>
+                                            <th>Date Submitted</th>
+                                            <th>Date Approved</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {files && files.map( file => (
+                                            <tr>
+                                                <td>{file.name}</td>
+                                                <td>{file.fileType}</td>
+                                                <td>{shortDate(file.createdAt)}</td>
+                                                <td>{shortDate(file.acceptedDate) || "--"}</td>
+                                                <td>{file.status}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

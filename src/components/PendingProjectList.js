@@ -43,6 +43,7 @@ const PendingProjectList = ({ pendingProjects, approveProjectFun }) => {
                     Approve
                   </button>
                 </li>
+                
                 <li className="list-inline-item">
                   <Link
                     to={`/projects/${project?._id}`}

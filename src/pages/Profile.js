@@ -8,36 +8,6 @@ import RegistrationForm from "../components/RegistrationForm";
 import DateFormat from "../utils/DateFormat";
 import isLoading from "../utils/LoadingUtil";
 
-const Text = ({role, profileData}) =>{
-    if(role === 'STUDENT') {
-        return (
-            <>
-                <p className="card-text">
-                    <i className="fa fa-files-o"></i>
-                    <span className="mx-1">Projects: {profileData?.projects?.length}</span>
-                    <span className="pull-right">
-                        <Link to="/my-projects" className="card-link">View</Link>
-                    </span>
-                </p>
-                <p className="card-text">
-                    <i className="fa fa-upload"></i>
-                    <span className="mx-1">Files: {profileData?.projectFiles?.length}</span>
-                    <span className="pull-right">
-                        <Link to="/my-files" className="card-link">View</Link>
-                    </span>
-                </p>
-                <p className="card-text">
-                    <i className="fa fa-comments-o"></i>
-                    <span className="mx-1">Comments: {profileData?.comments?.length}</span>
-                    <span className="pull-right">
-                        <Link to="/my-comments" className="card-link">View</Link>
-                    </span>
-                </p>
-            </>
-        );
-    }
-    return null;
-}
 class Profile extends Component{
       constructor(props) {
           super(props);
@@ -111,19 +81,19 @@ class Profile extends Component{
         }
     }
     async updateProfile(){
-        isLoading(true);
+          isLoading(true);
           let{ firstName, lastName, email, regNo, staffId, profileData, userRole} = this.state;
           let data = {
-              firstName: firstName,
-              lastName: lastName,
-              email: email,
-              regNo: regNo,
-              staffId: staffId
+              firstName: firstName || profileData?.user?.firstName ,
+              lastName: lastName || profileData?.user?.lastName,
+              email: email || profileData?.user?.email,
+              regNo: regNo || profileData?.regNo,
+              staffId: staffId || profileData?.staffId
           }
-
-        await this.doUpdate(profileData._id, userRole, data);
-        isLoading(false);
+          await this.doUpdate(profileData._id, userRole, data);
+          isLoading(false);
     }
+
     async doUpdate(_id, role, data){
         let response = null;
 
@@ -220,10 +190,15 @@ class Profile extends Component{
                                          <i className="fa fa-calendar"></i>
                                          <span className="mx-1">Joined: {DateFormat(profileData?.user?.createdAt).toDateString()}</span>
                                      </p>
-                                     <Text role={userRole} profileData={profileData} />
-                                     {/*<div style={{position:"absolute", left:"50%", bottom:"-30px", transform:"translate(-50%,-50%)"}}>*/}
-                                     {/*    <button type="button" className="btn btn-danger btn-sm">Delete</button>*/}
-                                     {/*</div>*/}
+                                     {userRole === 'STUDENT' && (
+                                         <p className="card-text">
+                                             <i className="fa fa-files-o"></i>
+                                             <span className="mx-1">Projects: {profileData?.projects?.length}</span>
+                                             <span className="pull-right">
+                                                    <Link to="/my-projects" className="card-link">View</Link>
+                                            </span>
+                                        </p>
+                                     )}
                                  </div>
                              </div>
 
@@ -233,7 +208,7 @@ class Profile extends Component{
                              <div className="card bg-transparent border-1">
                                  <div className="card-body">
                                      <p className="card-text">Update Details</p>
-                                     <RegistrationForm changeHandler={this.handleChange} names={true} email={true} regNo={userRole === 'STUDENT'} staffId={userRole !== 'STUDENT'} disabled={false}/>
+                                     <RegistrationForm changeHandler={this.handleChange} names={true} email={true} regNo={userRole === 'STUDENT'} staffId={userRole !== 'STUDENT'} disabled={false} data={profileData}/>
                                     <div className="my-2">
                                         <button className="btn btn-success btn-sm" type="button" onClick={this.updateProfile}>Update Details</button>
                                     </div>

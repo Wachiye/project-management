@@ -76,7 +76,7 @@ class Comments extends Component{
     }
 
     render() {
-        let { project, staff, student, comments, alert, hasAlert, active} = this.state;
+        let { project, comments, alert, hasAlert, active} = this.state;
         return(
             <div className="admin-main">
                 <div className="container">
@@ -95,7 +95,7 @@ class Comments extends Component{
                         <div className="col-12 mb-2">
                             <button className="btn btn-sm btn-outline-secondary" onClick={()=>this.setActive(true)}>New Comment</button>
                             <ModalContainer id="new-comment" title={`Project: ${project?.name}`} active={active} setActive={this.setActive} size="md">
-                                <NewComment projectId={project?._id} studentId={student?._id} staffId={staff?._id} />
+                                <NewComment projectId={project?._id} />
                             </ModalContainer>
                         </div>
                         <div className="col-12 mb-2">

@@ -114,13 +114,13 @@ class NewProject extends Component {
     let { name, description, category, languages, startDate, endDate, studentId, evaluatorId, project } = this.state;
     let data = {
       name: name,
-      description: description,
-      category: category,
-      languages: languages,
-      startDate: startDate,
-      endDate: endDate,
-      studentId: studentId,
-      evaluatorId: evaluatorId
+      description: description || project?.description,
+      category: category || project?.category,
+      languages: languages || project?.languages,
+      startDate: startDate || project.startDate,
+      endDate: endDate || project.endDate,
+      studentId: studentId || project?.student?._id,
+      evaluatorId: evaluatorId || project?.evaluator?._id
     }
 
     let response = edit ? await ProjectService.update(project?._id, data) : await ProjectService.save(data);
@@ -129,8 +129,8 @@ class NewProject extends Component {
       this.setAlert(response.error);
     }
     else{
+      console.log({response})
       this.setAlert( {
-        title : 'Operation successful',
         message: response.data.message,
         type:"success"
       });
@@ -152,7 +152,7 @@ class NewProject extends Component {
         <div className="admin-main">
           <div className={ project === null ? "container" : "container-fluid"}>
             <div className="row">
-              <div className={ project === null ? "col-md-8 m-auto" : "col-12"}>
+              <div className={ project === null ? "col-lg-8 m-auto" : "col-12"}>
                 <div className={project === null ? "card bg-light border-success" : "card bg-light"}>
                   {project == null? (
                   <div className="card-header bg-success text-light d-flex flex-row justify-content-center align-items-center">
@@ -165,7 +165,7 @@ class NewProject extends Component {
                           <div className="col-12">
                               {hasAlert && <Alert alert={alert} onClick={this.removeAlert}/>}
                           </div>
-                        <div className="col-md-6 mb-2">
+                        <div className="col-lg-6 mb-2">
                           <h3 className="text-success mb-2">Basic Details</h3>
 
                           <div className="form-group">
@@ -182,7 +182,7 @@ class NewProject extends Component {
                           </div>
                           <div className="form-group">
                             <label htmlFor="description" className="form-label">Description</label>
-                            <RichTextEditor text={project?.description} handleChangeFun={this.setDescription} /> 
+                            <RichTextEditor text={project?.description} height={350} handleChangeFun={this.setDescription} />
                           </div>
                           <div className="form-group">
                             <label htmlFor="evaluatorId" className="form-label">Project Evaluator</label>
@@ -194,7 +194,7 @@ class NewProject extends Component {
                             </select>
                           </div>
                         </div>
-                        <div className="col-md-6 mb-2">
+                        <div className="col-lg-6 mb-2">
                           <h3 className="text-success mb-2">Other Details</h3>
                           <div className="form-group">
                             <label htmlFor="languages" className="form-label">Programming Languages</label>

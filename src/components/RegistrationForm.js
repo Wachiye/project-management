@@ -25,7 +25,7 @@ const UserRoles = ({roles, changeHandler, disabled}) => {
     );
 }
 
-const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, regNo, staffId, roles}) => {
+const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, regNo, staffId, roles, data}) => {
     return(
         <>
             {names && (
@@ -42,6 +42,7 @@ const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, reg
                         placeholder="Enter your First Name "
                         required
                         disabled={disabled}
+                        defaultValue={ data?.user?.firstName || ''}
                         onChange={(evt)=>changeHandler(evt)}
                     />
                 </div>
@@ -57,6 +58,7 @@ const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, reg
                         placeholder="Enter your Last Name"
                         required
                         disabled={disabled}
+                        defaultValue={ data?.user?.lastName || ''}
                         onChange={(evt)=>changeHandler(evt)}
                     />
                 </div>
@@ -75,6 +77,7 @@ const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, reg
                         placeholder="Enter Email address"
                         required
                         disabled={disabled}
+                        defaultValue={ data?.user?.email || ''}
                         onChange={(evt)=>changeHandler(evt)}
                     />
                 </div>
@@ -92,6 +95,7 @@ const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, reg
                         placeholder="Enter Registration Number"
                         required
                         disabled={disabled}
+                        defaultValue={ data?.regNo || ''}
                         onChange={(evt)=>changeHandler(evt)}
                     />
                 </div>
@@ -109,6 +113,7 @@ const RegistrationForm = ({changeHandler, names, email, role, pwd, disabled, reg
                         placeholder="Enter StaffId"
                         required
                         disabled={disabled}
+                        defaultValue={ data?.staffId || ''}
                         onChange={(evt)=>changeHandler(evt)}
                     />
                 </div>
