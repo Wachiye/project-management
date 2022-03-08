@@ -84,7 +84,7 @@ class RegisterPage extends Component {
         role: role,
         regNo: regNo,
         staffId: staffId,
-        verifyURL:`http://localhost:3000/verify/`
+        verificationURL:`http://localhost:3000/verify/`
       };
 
       await this.doRegister(role, data);

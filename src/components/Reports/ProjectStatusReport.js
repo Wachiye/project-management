@@ -1,13 +1,17 @@
 import React from "react";
 import groupMilestones from "../../utils/MilestoneUtil";
 import groupTasks from "../../utils/TaskUtil";
-import {shortDate} from "../../utils/DateFormat";
+import {dateDiffInHours, shortDate} from "../../utils/DateFormat";
+import GanttChart from "../GanttChart/GanttChart";
 
 const  getAllTasks = (milestones) => {
     let tasks = [];
     if(milestones){
         milestones.forEach( milestone => {
+            milestone['duration'] = dateDiffInHours(milestone.endDate, milestone.startDate);
             milestone.tasks?.forEach( task => {
+                task['progress'] = task.status === 'PENDING' ? 0: ( tasks.status === "IN_PROGRESS" ? 50 : 100);
+                task['duration'] = dateDiffInHours(task.endDate, task.startDate);
                 tasks.push( task);
             });
         });
@@ -177,6 +181,15 @@ const ProjectStatusReport = ({project, projectSetting, thisYearSettings, user}) 
                             </div>
                             ):(null)}
 
+                            {/* gantt char */}
+                            <div className="card-text mb-2">
+                                <h4 className="card-title">Project Task Schedule</h4>
+                                {tasks.length > 0 ? (
+                                    <GanttChart tasks={tasks} />
+                                ): <p className="lead my-1 card-text  p-1">Could not show Gantt Chart because project has no tasks</p> }
+                            </div>
+                            
+
                             <div className="card-text mb-2">
                                 <h4 className="card-title">Documentation</h4>
                                 <table className="table table-bordered">
@@ -191,7 +204,7 @@ const ProjectStatusReport = ({project, projectSetting, thisYearSettings, user}) 
                                     </thead>
                                     <tbody>
                                         {files && files.map( file => (
-                                            <tr>
+                                            <tr key={file._id}>
                                                 <td>{file.name}</td>
                                                 <td>{file.fileType}</td>
                                                 <td>{shortDate(file.createdAt)}</td>

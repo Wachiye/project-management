@@ -3,6 +3,7 @@ import { Link, Redirect } from "react-router-dom";
 import Alert from "../components/Alert/Alert";
 
 import AuthService from "../services/AuthService";
+import delay from "../utils/delay";
 import isLoading from "../utils/LoadingUtil";
 
 const LoginDiv = ({ handleChange, loginFun, setPwdFun }) => {
@@ -154,6 +155,7 @@ class LoginPage extends Component {
       } else {
         
         AuthService.setToken(response.data.data);
+        delay(2000);
         this.props.history.push("/dashboard");
       }
       isLoading(false);

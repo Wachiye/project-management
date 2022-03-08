@@ -27,6 +27,15 @@ function zeroInFront( value, isMonth=false){
         return  value;
 }
 
+function dateDiffInHours(endDate, startDate) {
+    let end_date = new Date(endDate);
+    let start_date = new Date(startDate);
+    var diff = (end_date.getTime() - start_date.getTime()) / 1000;
+    diff /= (60 * 60);
+    return Math.abs(Math.round(diff));
+
+}
+
 export default DateFormat;
 
-export {dateToString, shortDate};
+export {dateToString, shortDate, dateDiffInHours};

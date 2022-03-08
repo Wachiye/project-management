@@ -42,7 +42,6 @@ const StudentDashboard = ({student, projects}) => {
         return Math.ceil( daysUsed / activeProject?.projectDays ) * 100;
     }
 
-    console.log({activeProject})
     return (
         <>
             <div className="row">

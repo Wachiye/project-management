@@ -21,7 +21,7 @@ const GuideList = ({guides=[], canDelete, deleteFun}) => {
             </thead>
             <tbody>
                 {guides.map( guide => (
-                <tr>
+                <tr key={guide._id}>
                     <td>{guide._id}</td>
                     <td>
                         <h5 className="text-primary">{guide.title}</h5>
