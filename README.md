@@ -1,6 +1,6 @@
 # Academic Project Approval & Management System
 
-![](public/images/apams.png "logo").\
+![](apams.png "logo").\
 Academic Project Approval and Management System is a web-based software application.\
 The main purpose of this system is to automate all the project-management operations in academics and create an effective and efficient platform for students and their project supervisors and evaluators to manage their academic projects.
 
