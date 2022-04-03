@@ -35,22 +35,21 @@ const ApproveProjects = () => {
     isLoading(false);
   };
 
-  const approveProject = async (projectId) =>{
+  const approveProject = async (projectId) => {
     isLoading(true);
-    let response = await ProjectService.setStatus(projectId,"ACCEPTED");
-    if(response.error){
-        setAlert(response.error);
-    } else{
-        setAlert({
-            
-            message: response.data.message,
-            type:"success"
-        });
-        setHasAlert(true);
-        await getPendingProjects();
+    const response = await ProjectService.setStatus(projectId, "ACCEPTED");
+    if (response.error) {
+      setAlert(response.error);
+    } else {
+      setAlert({
+        message: response.data.message,
+        type: "success"
+      });
+      setHasAlert(true);
+      await getPendingProjects();
     }
     isLoading(false);
-  }
+  };
 
   return (
     <div className="admin-main">
@@ -62,7 +61,7 @@ const ApproveProjects = () => {
           <div className="col-md-12 my-2 ">
             <div className="card bg-transparent shadow">
               <div className="card-body">
-              {hasAlert && <Alert alert={alert} onClick={removeAlert}/>}
+                {hasAlert && <Alert alert={alert} onClick={removeAlert} />}
                 {pendingProjects?.length > 0 ? (
                   <PendingProjectList
                     pendingProjects={pendingProjects}

@@ -7,7 +7,7 @@ import "./App.css";
 
 import "jquery/dist/jquery.min.js";
 import "@popperjs/core/dist/cjs/popper";
-import  "bootstrap/dist/js/bootstrap.min";
+import "bootstrap/dist/js/bootstrap.min";
 
 import { PrivateRoute, PublicRoute } from "./routes/Routes";
 
@@ -62,7 +62,11 @@ function App() {
         <PrivateRoute path="/new-project" exact component={NewProject} />
         <PrivateRoute path="/approve-projects" exact component={ApproveProjects} />
         <PrivateRoute path="/projects/:projectId/milestones" exact component={Milestones} />
-        <PrivateRoute path="/projects/:projectId/milestones/:milestoneId" exact component={ViewMilestone} />
+        <PrivateRoute
+          path="/projects/:projectId/milestones/:milestoneId"
+          exact
+          component={ViewMilestone}
+        />
         <PrivateRoute path="/new-milestone" exact component={NewMilestone} />
         <PrivateRoute path="/new-task/:milestoneId" exact component={NewTask} />
         <PrivateRoute path="/projects/:projectId/comments" exact component={Comments} />
@@ -73,7 +77,7 @@ function App() {
         <PrivateRoute path={"/reports"} exact component={Reports} />
 
         <PrivateRoute path="/profile" exact component={Profile} />
-        <PrivateRoute path="/users" exact component={Users}/>
+        <PrivateRoute path="/users" exact component={Users} />
         <PrivateRoute path="/students" exact component={Students} />
         <PrivateRoute path="/staff" exact component={Staff} />
         <PrivateRoute path="/new-user" exact component={NewUser} />

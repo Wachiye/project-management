@@ -14,6 +14,7 @@
     "font-awesome": "^4.7.0",
     "jquery": "^3.6.0",
     "popper.js": "^1.16.1",
+    "prettier": "^2.6.2",
     "react": "^17.0.2",
     "react-bootstrap": "^2.0.3",
     "react-doc-viewer": "^0.1.5",
@@ -30,6 +31,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
+    "prettier": "prettier --write \"src/**/*.{html,css,js}\"",
     "dev": "react-scripts start",
     "start": "serve -s build",
     "build": "react-scripts build",

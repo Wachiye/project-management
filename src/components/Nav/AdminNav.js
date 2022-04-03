@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import AuthService from "../../services/AuthService";
 import React from "react";
 import $ from "jquery";
@@ -22,11 +22,11 @@ const StudentNav = () => {
           My Projects
         </Link>
       </li>
-        <li className="nav-item">
-            <Link className="nav-link" to="/guides">
-                Guides
-            </Link>
-        </li>
+      <li className="nav-item">
+        <Link className="nav-link" to="/guides">
+          Guides
+        </Link>
+      </li>
     </>
   );
 };
@@ -34,9 +34,9 @@ const StudentNav = () => {
 const EvaluatorNav = () => {
   let pendingProjects = null;
 
-  ProjectService.getAllByStatus('WAITING_APPROVAL').then(res => {
-    pendingProjects = res.data?.data
-  })
+  ProjectService.getAllByStatus("WAITING_APPROVAL").then((res) => {
+    pendingProjects = res.data?.data;
+  });
 
   return (
     <>
@@ -64,21 +64,21 @@ const EvaluatorNav = () => {
         <li className="nav-item">
           <Link className="nav-link" to="/approve-projects">
             Approve Projects
-            <span className="badge text-danger pull-right">{pendingProjects?.length || 0 }</span>
+            <span className="badge text-danger pull-right">{pendingProjects?.length || 0}</span>
           </Link>
         </li>
       )}
       <li className="nav-item">
         <Link className="nav-link" to="/reports">
-            Reports
+          Reports
         </Link>
       </li>
       <li className="nav-item">
         <Link className="nav-link" to="/guides">
-            Guides
+          Guides
         </Link>
       </li>
-      <SettingsNav/>
+      <SettingsNav />
     </>
   );
 };
@@ -96,11 +96,11 @@ const SupervisorNav = () => {
           My Projects
         </Link>
       </li>
-        <li className="nav-item">
-            <Link className="nav-link" to="/guides">
-                Guides
-            </Link>
-        </li>
+      <li className="nav-item">
+        <Link className="nav-link" to="/guides">
+          Guides
+        </Link>
+      </li>
     </>
   );
 };
@@ -121,15 +121,15 @@ const AdminNav = () => {
     </>
   );
 };
-const SettingsNav =() => {
-    return(
-        <li className="nav-item">
-            <Link className="nav-link" to="/settings">
-                Settings
-            </Link>
-        </li>
-    );
-}
+const SettingsNav = () => {
+  return (
+    <li className="nav-item">
+      <Link className="nav-link" to="/settings">
+        Settings
+      </Link>
+    </li>
+  );
+};
 const GetNav = ({ role }) => {
   if (role === "STUDENT") return <StudentNav />;
   else if (role === "EVALUATOR") return <EvaluatorNav />;
@@ -139,26 +139,27 @@ const GetNav = ({ role }) => {
 };
 
 const Nav = (props) => {
-    const logout = async () =>{
-        let response = await AuthService.logout();
-        if (response.error) {
-            alert(response.error.message)
-        } else {
-            localStorage.removeItem("_apams");
-            window.location ="/login";
-        }
+  const logout = async () => {
+    const response = await AuthService.logout();
+    if (response.error) {
+      alert(response.error.message);
+    } else {
+      localStorage.removeItem("_apams");
+      window.location = "/login";
     }
+  };
 
-    function toggleNav() {
-        $('.admin-nav').toggleClass('active');
-    }
+  function toggleNav() {
+    $(".admin-nav").toggleClass("active");
+  }
   return (
     <div className="admin-nav">
       <div className="nav-header">
-        <h5>{props.role} Dashboard
-            <span className="pull-right d-lg-none" onClick={() => toggleNav()} >
-                <i className="fa fa-close"></i>
-            </span>
+        <h5>
+          {props.role} Dashboard
+          <span className="pull-right d-lg-none" onClick={() => toggleNav()}>
+            <i className="fa fa-close"></i>
+          </span>
         </h5>
       </div>
       <ul className="nav flex-column">
@@ -180,7 +181,7 @@ const Nav = (props) => {
         </li>
         <li className="nav-item">
           <Link className="nav-link" to="/help">
-              Help
+            Help
           </Link>
         </li>
         <li className="nav-item">

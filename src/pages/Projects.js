@@ -3,7 +3,7 @@ import Alert from "../components/Alert/Alert";
 import ProjectService from "../services/ProjectService";
 import ProjectCard from "../components/ProjectCard";
 import AuthService from "../services/AuthService";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import isLoading from "../utils/LoadingUtil";
 
 class Projects extends Component {
@@ -11,12 +11,12 @@ class Projects extends Component {
     super(props);
 
     this.state = {
-      allProjects:[],
+      allProjects: [],
       projects: [],
-      alert:{},
-      hasAlert:false,
-      categories :["WEB_BASED","ANDROID" ,"DESKTOP","NETWORKING","SECURITY","OTHER"],
-      statuses:["PENDING","WAITING_APPROVAL", "IN_PROGRESS","FINISHED","REJECTED", "ACCEPTED"]
+      alert: {},
+      hasAlert: false,
+      categories: ["WEB_BASED", "ANDROID", "DESKTOP", "NETWORKING", "SECURITY", "OTHER"],
+      statuses: ["PENDING", "WAITING_APPROVAL", "IN_PROGRESS", "FINISHED", "REJECTED", "ACCEPTED"]
     };
 
     this.setAlert = this.setAlert.bind(this);
@@ -28,56 +28,53 @@ class Projects extends Component {
 
   setAlert(alert) {
     this.setState({
-      alert: alert,
-      hasAlert: true,
+      alert,
+      hasAlert: true
     });
   }
   removeAlert() {
     this.setState({
       alert: null,
-      hasAlert: false,
+      hasAlert: false
     });
   }
 
-  filterProjectByStatus( status){
+  filterProjectByStatus(status) {
     this.setState({
-      projects: this.state.allProjects.filter( p=> p.status === status)
+      projects: this.state.allProjects.filter((p) => p.status === status)
     });
   }
 
-  filterProjectByCategory( category){
+  filterProjectByCategory(category) {
     this.setState({
-      projects: this.state.allProjects.filter( p=> p.category === category)
+      projects: this.state.allProjects.filter((p) => p.category === category)
     });
-
   }
-  removeFilter(){
+  removeFilter() {
     this.setState({
       projects: this.state.allProjects
-    })
+    });
   }
-  async componentDidMount(){
+  async componentDidMount() {
     isLoading(true);
-      let response = null;
-      if( AuthService.getUserRole() === 'STUDENT')
-        response = await ProjectService.getAllByStatus("FINISHED");
-      else
-        response = await ProjectService.getAll();
+    let response = null;
+    if (AuthService.getUserRole() === "STUDENT")
+      response = await ProjectService.getAllByStatus("FINISHED");
+    else response = await ProjectService.getAll();
 
-      if(response.error){
-        this.setAlert(response.error);
-      }
-      else{
-        this.setState({
-            allProjects: response.data.data,
-            projects: response.data.data
-        });
-      }
+    if (response.error) {
+      this.setAlert(response.error);
+    } else {
+      this.setState({
+        allProjects: response.data.data,
+        projects: response.data.data
+      });
+    }
     isLoading(false);
   }
 
   render() {
-      let {statuses, categories, projects, alert, hasAlert} = this.state;
+    const { statuses, categories, projects, alert, hasAlert } = this.state;
     return (
       <div className="admin-main">
         <div className="container-fluid p-1">
@@ -90,51 +87,76 @@ class Projects extends Component {
                 <div className="card-body">
                   <div className="pull-left">
                     <div className="d-flex">
-                    { AuthService.getUserRole() === "EVALUATOR" ? (
-                      <div>
-                        <label htmlFor="status" className="text-body">Status</label>
-                        <select name="status" id="status" className="form-control" onChange={(evt)=>this.filterProjectByStatus(evt.target.value)}>
-                          {statuses.map( (status, index) => (
-                              <option value={status} key={index}>{status}</option>
+                      {AuthService.getUserRole() === "EVALUATOR" ? (
+                        <div>
+                          <label htmlFor="status" className="text-body">
+                            Status
+                          </label>
+                          <select
+                            name="status"
+                            id="status"
+                            className="form-control"
+                            onChange={(evt) => this.filterProjectByStatus(evt.target.value)}
+                          >
+                            {statuses.map((status, index) => (
+                              <option value={status} key={index}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ) : (
+                        <div></div>
+                      )}
+                      <div className="mx-1">
+                        <label htmlFor="category" className="text-body">
+                          Category
+                        </label>
+                        <select
+                          name="category"
+                          id="category"
+                          className="form-control"
+                          onChange={(evt) => this.filterProjectByCategory(evt.target.value)}
+                        >
+                          {categories.map((category, index) => (
+                            <option value={category} key={index}>
+                              {category}
+                            </option>
                           ))}
                         </select>
                       </div>
-                    ):(<div></div>)}
                       <div className="mx-1">
-                        <label htmlFor="category" className="text-body">Category</label>
-                        <select name="category" id="category" className="form-control" onChange={(evt)=>this.filterProjectByCategory(evt.target.value)}>
-                          {categories.map( (category, index) => (
-                              <option value={category} key={index}>{category}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="mx-1">
-                        <label htmlFor="removeFilter" ></label>
-                        <input type="button" className="form-control" onClick={this.removeFilter} value="Remove Filter" />
+                        <label htmlFor="removeFilter"></label>
+                        <input
+                          type="button"
+                          className="form-control"
+                          onClick={this.removeFilter}
+                          value="Remove Filter"
+                        />
                       </div>
                     </div>
                   </div>
                   <div className="pull-right">
-
-                    { AuthService.getUserRole() === "EVALUATOR" && (
-                        <Link to="/approve-projects" className="btn btn-primary mx-2">
-                          Approve Projects
-                        </Link>
+                    {AuthService.getUserRole() === "EVALUATOR" && (
+                      <Link to="/approve-projects" className="btn btn-primary mx-2">
+                        Approve Projects
+                      </Link>
                     )}
                   </div>
                 </div>
               </div>
             </div>
             <div className="col-md-12">
-                {hasAlert && <Alert alert={alert} onClick={this.removeAlert}/>}
+              {hasAlert && <Alert alert={alert} onClick={this.removeAlert} />}
             </div>
           </div>
           <div className="row">
-            {projects && projects.map(project => (
+            {projects &&
+              projects.map((project) => (
                 <div className="col-sm-6 col-md-4 mb-2" key={project._id}>
                   <ProjectCard project={project} />
                 </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>

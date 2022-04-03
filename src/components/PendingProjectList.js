@@ -21,14 +21,12 @@ const PendingProjectList = ({ pendingProjects, approveProjectFun }) => {
             <td>
               <h6>{project?.name}</h6>
               <span className="small text-muted">
-                {project?.description?.substring(0, 70) + "..."}
+                {`${project?.description?.substring(0, 70)}...`}
               </span>
             </td>
             <td>{project?.category}</td>
             <td>
-              {project?.student?.user?.firstName +
-                " " +
-                project?.student?.user?.lastName}
+              {`${project?.student?.user?.firstName} ${project?.student?.user?.lastName}`}
               <h6 className="small">{project?.student?.regNo}</h6>
             </td>
             <td>{shortDate(project?.createdAt)}</td>
@@ -43,7 +41,7 @@ const PendingProjectList = ({ pendingProjects, approveProjectFun }) => {
                     Approve
                   </button>
                 </li>
-                
+
                 <li className="list-inline-item">
                   <Link
                     to={`/projects/${project?._id}`}

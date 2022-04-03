@@ -19,11 +19,11 @@ class RegisterPage extends Component {
       password: "",
       confirmPassword: "",
       role: "STUDENT",
-      roles:this.props.roles || ['STUDENT'],
+      roles: this.props.roles || ["STUDENT"],
       regNo: "",
       staffId: "",
       alert: {},
-      hasAlert: false,
+      hasAlert: false
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -34,57 +34,49 @@ class RegisterPage extends Component {
   }
 
   handleChange(evt) {
-    let value = evt.target.value;
+    const value = evt.target.value;
     this.setState({
       ...this.state,
-      [evt.target.name]: value,
+      [evt.target.name]: value
     });
   }
 
   setAlert(alert) {
     this.setState({
-      alert: alert,
-      hasAlert: true,
+      alert,
+      hasAlert: true
     });
   }
   removeAlert() {
     this.setState({
       alert: null,
-      hasAlert: false,
+      hasAlert: false
     });
   }
   async register() {
     isLoading(true);
-    let {
-      firstName,
-      lastName,
-      email,
-      role,
-      regNo,
-      staffId,
-      password,
-      confirmPassword,
-    } = this.state;
+    const { firstName, lastName, email, role, regNo, staffId, password, confirmPassword } =
+      this.state;
 
     if (confirmPassword !== password) {
       this.setAlert({
         type: "danger",
         message: "Passwords don't match.",
-        title: "Error",
+        title: "Error"
       });
       $("#btnRegister").removeClass("loading");
       return false;
     } else {
       this.removeAlert();
-      let data = {
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        password: password,
-        role: role,
-        regNo: regNo,
-        staffId: staffId,
-        verificationURL:`http://localhost:3000/verify/`
+      const data = {
+        firstName,
+        lastName,
+        email,
+        password,
+        role,
+        regNo,
+        staffId,
+        verificationURL: "http://localhost:3000/verify/"
       };
 
       await this.doRegister(role, data);
@@ -105,12 +97,12 @@ class RegisterPage extends Component {
       this.setAlert({
         title: "Operation successful",
         message: response.data.message,
-        type: "success",
+        type: "success"
       });
     }
   }
   render() {
-    let { alert, hasAlert, role, roles} = this.state;
+    const { alert, hasAlert, role, roles } = this.state;
     return (
       <main className={this.props.class || "main"}>
         <div className="container">
@@ -118,14 +110,10 @@ class RegisterPage extends Component {
             <div className="col-md-8 col-lg-6 m-auto">
               <div className="card bg-light border-success">
                 <div className=" card-header d-flex flex-row justify-content-center align-items-center">
-                  <h6 className="text align-content-center">
-                    New Account Registration
-                  </h6>
+                  <h6 className="text align-content-center">New Account Registration</h6>
                 </div>
                 <div className="card-body">
-                  {hasAlert && (
-                    <Alert alert={alert} onClick={this.removeAlert} />
-                  )}
+                  {hasAlert && <Alert alert={alert} onClick={this.removeAlert} />}
                   <RegistrationForm
                     changeHandler={this.handleChange}
                     names={true}
@@ -140,25 +128,17 @@ class RegisterPage extends Component {
                   {role && (
                     <div className="form-group mb-2">
                       <label
-                        htmlFor={`${
-                          role === "STUDENT" || role === ""
-                            ? "regNo"
-                            : "staffId"
-                        }`}
+                        htmlFor={`${role === "STUDENT" || role === "" ? "regNo" : "staffId"}`}
                         className="form-label"
                       >
-                        {`${
-                          role === "STUDENT" ? "Registration No" : "Staff ID"
-                        }`}
+                        {`${role === "STUDENT" ? "Registration No" : "Staff ID"}`}
                       </label>
                       <input
                         type="text"
                         className="form-control"
                         id={`${role === "STUDENT" ? "regNo" : "staffId"}`}
                         name={`${role === "STUDENT" ? "regNo" : "staffId"}`}
-                        placeholder={`Enter ${
-                          role === "STUDENT" ? "Registration No" : "Staff ID"
-                        }`}
+                        placeholder={`Enter ${role === "STUDENT" ? "Registration No" : "Staff ID"}`}
                         required
                         onChange={this.handleChange}
                       />

@@ -1,18 +1,21 @@
 import progressInPercentage from "./ProgressUtil";
 
-const groupTasks= (tasks) => {
-
-    let pendingTasks = tasks?.filter(p => p.status === 'PENDING');
-    let completeTasks = tasks?.filter(p => p.status === 'FINISHED');
-    let tasksInProgress = tasks?.filter(p => p.status === 'IN_PROGRESS');
-    let taskProgressInPercentage = progressInPercentage( completeTasks?.length, tasksInProgress?.length, tasks?.length);
-    return {
-        tasks,
-        pendingTasks,
-        completeTasks,
-        tasksInProgress,
-        taskProgressInPercentage
-    };
-}
+const groupTasks = (tasks) => {
+  const pendingTasks = tasks?.filter((p) => p.status === "PENDING");
+  const completeTasks = tasks?.filter((p) => p.status === "FINISHED");
+  const tasksInProgress = tasks?.filter((p) => p.status === "IN_PROGRESS");
+  const taskProgressInPercentage = progressInPercentage(
+    completeTasks?.length,
+    tasksInProgress?.length,
+    tasks?.length
+  );
+  return {
+    tasks,
+    pendingTasks,
+    completeTasks,
+    tasksInProgress,
+    taskProgressInPercentage
+  };
+};
 
 export default groupTasks;

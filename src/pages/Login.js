@@ -42,7 +42,10 @@ const LoginDiv = ({ handleChange, loginFun, setPwdFun }) => {
           </button>
         </div>
         <div className="col">
-          <button className="card-link btn btn-sm btn-outline-secondary" onClick={() => setPwdFun()}>
+          <button
+            className="card-link btn btn-sm btn-outline-secondary"
+            onClick={() => setPwdFun()}
+          >
             Forgot Password?
           </button>
         </div>
@@ -69,15 +72,15 @@ const PwdDiv = ({ handleChange, resetPasswordFun, setPwdFun }) => {
       </div>
       <div className="row">
         <div className="col">
-          <button
-            className="btn btn-success btn-sm"
-            onClick={() => resetPasswordFun()}
-          >
+          <button className="btn btn-success btn-sm" onClick={() => resetPasswordFun()}>
             Reset Password
           </button>
         </div>
         <div className="col">
-          <button className="card-link btn btn-sm btn-outline-secondary" onClick={() => setPwdFun()}>
+          <button
+            className="card-link btn btn-sm btn-outline-secondary"
+            onClick={() => setPwdFun()}
+          >
             Login
           </button>
         </div>
@@ -95,7 +98,7 @@ class LoginPage extends Component {
       password: "",
       alert: {},
       hasAlert: false,
-      pwd: false,
+      pwd: false
     };
 
     this.setAlert = this.setAlert.bind(this);
@@ -107,53 +110,52 @@ class LoginPage extends Component {
   }
 
   handleChange(evt) {
-    let value = evt.target.value;
+    const value = evt.target.value;
     this.setState({
       ...this.state,
-      [evt.target.name]: value,
+      [evt.target.name]: value
     });
   }
 
   setAlert(alert) {
     this.setState({
-      alert: alert,
-      hasAlert: true,
+      alert,
+      hasAlert: true
     });
   }
   removeAlert() {
     this.setState({
       alert: null,
-      hasAlert: false,
+      hasAlert: false
     });
   }
 
   setPwd() {
     this.setState({
-      pwd: !this.state.pwd,
+      pwd: !this.state.pwd
     });
   }
 
   async login() {
-    let { email, password } = this.state;
+    const { email, password } = this.state;
 
-    let data = {
-      email: email,
-      password: password,
+    const data = {
+      email,
+      password
     };
     if (!email || !password) {
       this.setAlert({
         message: "Email and Password are required",
-        type: "danger",
+        type: "danger"
       });
     } else {
       isLoading(true);
-    
-      let response = await AuthService.login(data);
+
+      const response = await AuthService.login(data);
 
       if (response.error) {
         this.setAlert(response.error);
       } else {
-        
         AuthService.setToken(response.data.data);
         delay(2000);
         this.props.history.push("/dashboard");
@@ -163,11 +165,11 @@ class LoginPage extends Component {
   }
 
   async resetPassword() {
-    let { email } = this.state;
+    const { email } = this.state;
     if (!email) {
       return this.setAlert({
         message: "Email is required",
-        type: "danger",
+        type: "danger"
       });
     } else {
       isLoading(true);
@@ -177,7 +179,7 @@ class LoginPage extends Component {
         } else {
           this.setAlert({
             message: response.data?.message,
-            type: "success",
+            type: "success"
           });
         }
       });
@@ -186,8 +188,8 @@ class LoginPage extends Component {
   }
 
   render() {
-    let { alert, hasAlert, pwd } = this.state;
-    let token = AuthService.getToken();
+    const { alert, hasAlert, pwd } = this.state;
+    const token = AuthService.getToken();
 
     if (token) {
       return <Redirect to="/dashboard" />;
@@ -199,12 +201,12 @@ class LoginPage extends Component {
               <div className="col-md-6 m-auto">
                 <div className="card bg-light border-success">
                   <div className="card-header bg-success text-light d-flex flex-row justify-content-center align-items-center">
-                    <h6 className="text align-content-center">{pwd ? 'Reset Password' :'Member Login' }</h6>
+                    <h6 className="text align-content-center">
+                      {pwd ? "Reset Password" : "Member Login"}
+                    </h6>
                   </div>
                   <div className="card-body">
-                    {hasAlert && (
-                      <Alert alert={alert} onClick={this.removeAlert} />
-                    )}
+                    {hasAlert && <Alert alert={alert} onClick={this.removeAlert} />}
                     {pwd ? (
                       <PwdDiv
                         handleChange={this.handleChange}

@@ -1,17 +1,17 @@
-import React from "react";
-import { Route, Redirect } from "react-router-dom";
+import React from 'react';
+import { Route, Redirect } from 'react-router-dom';
 
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer";
-import AdminHeader from "../components/Header/AdminHeader";
-import AuthService from "../services/AuthService";
-import AdminNav from "../components/Nav/AdminNav";
-import AdminFooter from "../components/Footer/AdminFooter";
-import $ from "jquery";
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
+import AdminHeader from '../components/Header/AdminHeader';
+import AuthService from '../services/AuthService';
+import AdminNav from '../components/Nav/AdminNav';
+import AdminFooter from '../components/Footer/AdminFooter';
+import $ from 'jquery';
 
 const PublicLayout = ({ children }) => {
   function toggleNav() {
-      $('.navbar-collapse').removeClass('show');
+    $('.navbar-collapse').removeClass('show');
   }
   return (
     <div className="wrapper">
@@ -24,18 +24,18 @@ const PublicLayout = ({ children }) => {
 };
 
 const PrivateLayout = ({ children, role }) => {
-    function toggleNav() {
-        $('.admin-nav').removeClass('active');
-    }
+  function toggleNav() {
+    $('.admin-nav').removeClass('active');
+  }
   return (
     <div className="admin-wrapper">
       <AdminHeader />
       <AdminNav role={role} />
-        <>
-            {toggleNav()}
-            {children}
-        </>
-      <AdminFooter />
+      <>
+        {toggleNav()}
+        {children}
+      </>
+      <AdminFooter/>
     </div>
   );
 };
@@ -54,8 +54,8 @@ const PublicRoute = ({ component: Component, ...rest }) => {
 };
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  let token = AuthService.getToken();
-  let role = AuthService.getUserRole();
+  const token = AuthService.getToken();
+  const role = AuthService.getUserRole();
 
   if (!token) {
     return <Redirect to="/login" />;

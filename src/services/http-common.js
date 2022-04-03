@@ -6,11 +6,11 @@ const baseURL = REACT_APP_API_URL;
 const token = JSON.parse(localStorage.getItem("_apams"))?.token;
 
 const Http = axios.create({
-  baseURL: baseURL,
+  baseURL,
   headers: {
     "Content-type": "application/json",
-    Authorization: !token ? null :`Bearer ${token}`,
-  },
+    Authorization: !token ? null : `Bearer ${token}`
+  }
 });
 
 Http.interceptors.response.use(
@@ -19,8 +19,8 @@ Http.interceptors.response.use(
       res = {
         data: {
           type: "danger",
-          message: "Item deleted successfully",
-        },
+          message: "Item deleted successfully"
+        }
       };
     }
 
@@ -33,8 +33,8 @@ Http.interceptors.response.use(
         error: {
           message: err.response.data.message,
           status: err.response.data.status,
-          type: "danger",
-        },
+          type: "danger"
+        }
       };
     }
 
@@ -45,9 +45,8 @@ Http.interceptors.response.use(
           name: "connection_err",
           title: "SERVER_CONNECTION_ERROR",
           type: "danger",
-          message:
-            "Sorry, but could not connect to the server. Try again later.",
-        },
+          message: "Sorry, but could not connect to the server. Try again later."
+        }
       };
     }
   }
