@@ -58,7 +58,7 @@ public class EmailService {
                 helper.setCc(email.getCc());
 
             helper.setSubject(email.getSubject());
-            helper.setText(email.getText());
+            helper.setText(email.getText(), true);
 
             //add attachments
             if( email.getAttachments() !=null)
@@ -88,6 +88,7 @@ public class EmailService {
         text += "<p>Thank you. We hope that the online platform will help you manage your project effectively <br />" +
                 "Good luck as you tackle your project. </p>";
         email.setText(text);
+
         email.setAttachments(null);
 
         sendHtml( email);
