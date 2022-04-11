@@ -15,4 +15,5 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
     List<UserModel> findAllByRole(UserRoles roles);
 
     Optional<UserModel> findUserModelByVerificationCode(String verificationCode);
+
 }
