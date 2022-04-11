@@ -39,7 +39,7 @@ const Milestone = ({ milestone, _id, changeStatus, deleteMilestone, delMilestone
                 data-target={`tasks-list-${milestone._id}`}
                 onClick={(evt) => showHelp(evt)}
               >
-                <i className="fa fa-plus"></i>
+                Tasks
               </button>
             </li>
             {deleteMilestone && (
@@ -137,7 +137,6 @@ const MilestoneList = ({ milestones, deleteMilestone, refreshFun }) => {
           type: "success"
         });
         setHasAlert(true);
-        refreshFun();
       }
       isLoading(false);
     }
@@ -160,7 +159,6 @@ const MilestoneList = ({ milestones, deleteMilestone, refreshFun }) => {
           type: "success"
         });
       }
-      refreshFun();
       isLoading(false);
     }
   };

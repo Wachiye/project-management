@@ -1,11 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProjectService from "../../services/ProjectService";
+import UserService from "../../services/UserService";
+import StudentService from "../../services/StudentService";
+import StaffService from "../../services/StaffService";
+
 import Alert from "../Alert/Alert";
 import UpdateCard from "./UpdateCard";
 import groupProjects, { QuickUpdate } from "../../utils/ProjectUtil";
 import PendingProjectList from "../PendingProjectList";
 
-const EvaluatorDashboard = ({ projects, users, students, staff }) => {
+const EvaluatorDashboard = () => {
+
+  const [students, setStudents] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [staff, setStaff] = useState([]);
+
+  useEffect(() => {
+    ( async () => {
+      let stdRes = await StudentService.getAll();
+
+      if(!stdRes.error) {
+        setStudents(stdRes.data.data);
+      }
+  
+      let proRes = await ProjectService.getAll();
+
+      if (!proRes.error) {
+        setProjects(proRes.data.data);
+      }
+  
+      let userRes = await UserService.getAll();
+      if(!userRes.error){
+        setUsers(userRes.data.data)
+      };
+  
+      let staffRes = await StaffService.getAll();
+
+      if(!staffRes.error){
+        setStaff(staffRes.data.data);
+      }
+    }) ();
+   
+    
+  }, []);
+
   let { pendingProjects } = groupProjects(projects);
 
   const [alert, setAlert] = useState({});
@@ -15,6 +54,7 @@ const EvaluatorDashboard = ({ projects, users, students, staff }) => {
     setAlert(null);
     setHasAlert(false);
   };
+
   const data = [
     {
       title: "All Projects",

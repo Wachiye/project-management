@@ -10,20 +10,23 @@ const StudentDashboard = () => {
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    StudentService.getAll().then((res) => {
-      if (!res.error) {
+    (async () => {
+      let stdRes = await StudentService.getAll();
+
+      if (!stdRes.error) {
         const userEmail = AuthService.getUserEmail();
-        const student = res.data.data.filter((std) => std.user?.email === userEmail)[0];
+        const student = stdRes.data.data.filter((std) => std.user?.email === userEmail)[0];
 
         setStudent(student);
       }
-    });
 
-    ProjectService.getAll().then((res) => {
-      if (!res.error) {
-        setProjects(res.data.data);
+      let pRes = await ProjectService.getAll();
+
+      if (!pRes.error) {
+        setProjects(pRes.data.data);
       }
-    });
+    })();
+    
   }, []);
 
   const activeProject = student?.projects?.filter((p) => p.status === "IN_PROGRESS")[0];
@@ -75,7 +78,7 @@ const StudentDashboard = () => {
                     <div className="col-6 col-md-3 ">
                       <Link to="/projects" className="update">
                         <div className="icon d-flex justify-content-center align-items-center">
-                          <img src="" alt="" width="35" height="35" />
+                        <i className="fa fa-2x fa-files-o" />
                         </div>
                         <h6 className="title">All Projects</h6>
                         <p className="text">{projects?.length || 0}</p>
@@ -84,7 +87,7 @@ const StudentDashboard = () => {
                     <div className="col-6 col-md-3 ">
                       <Link to="/my-projects" className="update">
                         <div className="icon d-flex justify-content-center align-items-center">
-                          <img src="" alt="" width="35" height="35" />
+                        <i className="fa fa-2x fa-file-code-o" />
                         </div>
                         <h6 className="title">My Projects</h6>
                         <p className="text">{student?.projects?.length || 0}</p>
@@ -93,7 +96,7 @@ const StudentDashboard = () => {
                     <div className="col-6 col-md-3  ">
                       <Link to={`/project-milestones/${activeProject?._id}`} className="update">
                         <div className="icon d-flex justify-content-center align-items-center">
-                          <img src="" alt="" width="35" height="35" />
+                        <i className="fa fa-2x fa-cogs" />
                         </div>
                         <h6 className="title">Milestones</h6>
                         <p className="text">{activeProject?.milestones?.length || 0}</p>
@@ -102,7 +105,7 @@ const StudentDashboard = () => {
                     <div className="col-6 col-md-3 ">
                       <div className="update">
                         <div className="icon d-flex justify-content-center align-items-center">
-                          <img src="" alt="" width="35" height="35" />
+                          <i className="fa fa-2x fa-files-o" />
                         </div>
                         <h6 className="title">Project Files</h6>
                         <p className="text">{activeProject?.files?.length || 0}</p>

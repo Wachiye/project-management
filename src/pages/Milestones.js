@@ -83,6 +83,32 @@ class Milestones extends Component {
     isLoading(false);
   }
 
+  static getDerivedStateFromProps(nextProps, prevState){
+    if(nextProps.projectId !== prevState.projectId){
+      return {projectId: nextProps.projectId}
+    }else{
+      return null;
+    }
+  }
+  // async componentWillUpdate(prevProps, prevState){
+  //   if(prevState.projectId !== this.state.projectId){
+  //     const _id = this.props.match.params.projectId;
+  //     this.setState({
+  //       projectId: _id
+  //     });
+  //     await this.getMilestones();
+  //   }
+  // }
+
+  async componentWillUpdate(prevProps){
+    if(this.props.match.params.projectId !== prevProps.match.params.projectId){
+      const _id = this.props.match.params.projectId;
+      this.setState({
+        projectId: _id
+      });
+      await this.getMilestones();
+    }
+  }
   render() {
     const { title, milestones, alert, hasAlert, projectId, active } = this.state;
     return (
@@ -125,7 +151,7 @@ class Milestones extends Component {
                     <MilestoneList
                       milestones={milestones}
                       deleteMilestone={this.isOwner()}
-                      refreshFun={() => this.getMilestones()}
+                      refreshFun={this.getMilestones()}
                     />
                   )}
                 </div>

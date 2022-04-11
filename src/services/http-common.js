@@ -45,7 +45,7 @@ Http.interceptors.response.use(
           name: "connection_err",
           title: "SERVER_CONNECTION_ERROR",
           type: "danger",
-          message: "Sorry, but could not connect to the server. Try again later."
+          message: "Sorry, but the server took so long to give response. Try again later."
         }
       };
     }

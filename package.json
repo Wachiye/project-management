@@ -33,7 +33,8 @@
   "scripts": {
     "prettier": "prettier --write \"src/**/*.{html,css,js}\"",
     "dev": "react-scripts start",
-    "start": "serve -s build",
+    "start": "react-scripts start",
+    "serve": "serve -s build",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",

@@ -158,7 +158,7 @@ class LoginPage extends Component {
       } else {
         AuthService.setToken(response.data.data);
         delay(2000);
-        this.props.history.push("/dashboard");
+       window.location = "/dashboard";
       }
       isLoading(false);
     }
