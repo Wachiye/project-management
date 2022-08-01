@@ -5,6 +5,6 @@ const REACT_APP_SITE = {
   ADDRESS: "P.O.Box 536, Egerton"
 };
 
-const REACT_APP_API_URL = "http://localhost:8080/api/v1/";
+const REACT_APP_API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080/api/v1/";
 
 export { REACT_APP_SITE, REACT_APP_API_URL };
