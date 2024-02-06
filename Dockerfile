@@ -1,9 +1,9 @@
 # Build stage for the Java application
 FROM maven:3.9.5-eclipse-temurin-17 AS build
 WORKDIR /app
-ENV APAMS_DB_URL=jdbc:mysql//localhost:3306/apamsdb
-ENV APAMS_DB_USERNAME=4Root@123
-ENV APAMS_DB_PASSWORD=4Apamsdb@123
+ENV APAMS_DB_URL=jdbc:mysql://localhost:3306/apamsdb
+ENV APAMS_DB_USERNAME=root
+ENV APAMS_DB_PASSWORD=4Root@123
 ENV APAMS_JWT_SECRET=MySecureSecrete
 COPY pom.xml /app/
 COPY src /app/src/
