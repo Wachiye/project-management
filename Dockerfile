@@ -19,7 +19,7 @@ ENV MYSQL_DATABASE=apamsdb
 # Set MySQL user and password for the application
 ENV MYSQL_USER=apamsdb
 ENV MYSQL_PASSWORD=4Apamsdb@123
-do
+
 # Final stage for the application
 FROM openjdk:17
 WORKDIR /app
